@@ -7,14 +7,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.navigation3.runtime.NavKey
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
-import com.artmine15.svod.ui.screens.AuthenticationScreen
+import com.artmine15.svod.ui.screens.AuthScreen
 import com.artmine15.svod.ui.theme.SvodTheme
+import com.artmine15.svod.viewmodels.NavigationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -25,14 +24,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             SvodTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    val backStack = remember { mutableStateListOf<NavKey>(AuthenticationScreenKey) }
+                    val navigationViewModel = hiltViewModel<NavigationViewModel>()
                     NavDisplay(
                         modifier = Modifier.padding(innerPadding),
-                        backStack = backStack,
-                        onBack = { backStack.removeLastOrNull() },
+                        backStack = navigationViewModel.backStack,
+                        onBack = { navigationViewModel.navigateBack() },
                         entryProvider = entryProvider{
                             entry(AuthenticationScreenKey) {
-                                AuthenticationScreen()
+                                AuthScreen()
                             }
                         }
                     )
