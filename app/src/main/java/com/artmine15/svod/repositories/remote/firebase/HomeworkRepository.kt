@@ -42,7 +42,32 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
         onSuccess: () -> Unit,
         onFailure: () -> Unit
     ) {
-        db.collection("rooms").document(roomId).collection("homeworks").document(date.toString())
+        val homeworkDocument = db.collection("rooms").document(roomId).collection("homeworks").document(date.toString())
+
+        var isInitialized = false
+        homeworkDocument
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                if(documentSnapshot != null && documentSnapshot.exists()){
+                    isInitialized = true
+                }
+            }
+        if(!isInitialized){
+            initializeHomework(
+                roomId = roomId,
+                date = date,
+                onSuccess = {
+                    isInitialized = true
+                },
+                onFailure = {}
+            )
+        }
+        if(!isInitialized){
+            onFailure.invoke()
+            return
+        }
+
+        homeworkDocument
             .update(lessonField.name, fieldValue)
             .addOnSuccessListener {
                 Log.d("App", "Field ${lessonField.name} has new value: $fieldValue")
