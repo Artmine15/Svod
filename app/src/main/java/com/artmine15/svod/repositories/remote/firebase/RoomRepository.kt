@@ -16,7 +16,8 @@ class RoomRepository @Inject constructor() : RoomHandler {
         onFailure: () -> Unit
     ) {
         val usersMap = hashMapOf(
-            "users" to listOf(adminUserId)
+            "adminUserId" to adminUserId,
+            "userIds" to listOf<String>()
         )
 
         db.collection("rooms").add(usersMap)
@@ -27,6 +28,26 @@ class RoomRepository @Inject constructor() : RoomHandler {
             .addOnFailureListener { exception ->
                 Log.d("App", "Room creation failed. ${exception.toString()}")
                 onFailure.invoke()
+            }
+    }
+
+    override fun getAdminIdOfRoom(
+        roomId: String,
+        onSuccess: (adminUserId: String) -> Unit,
+        onFailure: () -> Unit,
+    ) {
+        db.collection("rooms").document(roomId)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                val adminUserId = documentSnapshot.get("adminUserId") as String
+
+                Log.d("App", "Admin of the room: $adminUserId")
+                if(documentSnapshot != null && documentSnapshot.exists()){
+                    onSuccess.invoke(adminUserId)
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.d("App", "Admin not found: ${exception.toString()}")
             }
     }
 
