@@ -16,14 +16,21 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
         }
     }
 
-    override fun initializeHomework(roomId: String, date: LocalDate) {
+    override fun initializeHomework(
+        roomId: String,
+        date: LocalDate,
+        onSuccess: () -> Unit,
+        onFailure: () -> Unit
+    ) {
         db.collection("rooms").document(roomId).collection("homeworks").document(date.toString())
             .set(lessonsMap)
             .addOnSuccessListener {
                 Log.d("App", "Homework initialized. Date: $date")
+                onSuccess.invoke()
             }
             .addOnFailureListener { exception ->
                 Log.d("App", "Homework initialization failed. ${exception.toString()}")
+                onFailure.invoke()
             }
     }
 
@@ -32,14 +39,18 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
         date: LocalDate,
         lessonField: Lessons,
         fieldValue: String,
+        onSuccess: () -> Unit,
+        onFailure: () -> Unit
     ) {
         db.collection("rooms").document(roomId).collection("homeworks").document(date.toString())
             .update(lessonField.name, fieldValue)
             .addOnSuccessListener {
                 Log.d("App", "Field ${lessonField.name} has new value: $fieldValue")
+                onSuccess.invoke()
             }
             .addOnFailureListener { exception ->
                 Log.d("App", "Field ${lessonField.name} updating failed. ${exception.toString()}")
+                onFailure.invoke()
             }
     }
 }

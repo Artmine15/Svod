@@ -5,7 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import jakarta.inject.Inject
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 class LocalUserDataRepository @Inject constructor(val context: Context) {
@@ -17,15 +17,15 @@ class LocalUserDataRepository @Inject constructor(val context: Context) {
         }
     }
 
-    fun<T> getValue(key: Preferences.Key<T>) : Flow<T?> {
+    suspend fun<T> getValue(key: Preferences.Key<T>) : T? {
         return context.dataStore.data.map { preferences ->
-             preferences[key]
-        }
+            preferences[key]
+        }.first()
     }
 
-    fun<T> getValue(key: Preferences.Key<T>, initial: T) : Flow<T> {
+    suspend fun<T> getValue(key: Preferences.Key<T>, initial: T) : T {
         return context.dataStore.data.map { preferences ->
-            preferences[key] ?: initial
-        }
+            preferences[key]
+        }.first() ?: initial
     }
 }
