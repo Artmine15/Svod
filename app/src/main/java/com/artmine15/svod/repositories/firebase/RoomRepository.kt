@@ -20,8 +20,8 @@ class RoomRepository @Inject constructor() : RoomHandler {
                 Log.d("App", "User $userId successfully added")
                 onSuccess.invoke()
             }
-            .addOnFailureListener {
-                Log.d("App", "User $userId not added, failed")
+            .addOnFailureListener { exception ->
+                Log.d("App", "User $userId not added. ${exception.toString()}")
             }
     }
 
@@ -35,8 +35,8 @@ class RoomRepository @Inject constructor() : RoomHandler {
                 onSuccess.invoke(documentReference.id)
                 Log.d("App", "Room creation success, id: ${documentReference.id}")
             }
-            .addOnFailureListener {
-                Log.d("App", "Room creation failed")
+            .addOnFailureListener { exception ->
+                Log.d("App", "Room creation failed. ${exception.toString()}")
             }
     }
 }

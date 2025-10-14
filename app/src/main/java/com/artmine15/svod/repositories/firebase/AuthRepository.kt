@@ -19,8 +19,8 @@ class AuthRepository @Inject constructor() : AuthHandler {
                  onSuccess.invoke(documentReference.id)
                  Log.d("App", "Success with id ${documentReference.id}")
              }
-             .addOnFailureListener {
-                 Log.d("App", "Failure")
+             .addOnFailureListener { exception ->
+                 Log.d("App", "User creation failed. ${exception.toString()}")
              }
     }
 }
