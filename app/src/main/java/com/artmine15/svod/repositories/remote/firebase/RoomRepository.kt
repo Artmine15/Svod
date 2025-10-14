@@ -10,25 +10,6 @@ import kotlin.collections.listOf
 class RoomRepository @Inject constructor() : RoomHandler {
     val db = FirebaseFirestore.getInstance()
 
-    override fun joinRoomAsUser(
-        roomId: String,
-        userId: String,
-        onSuccess: () -> Unit,
-        onFailure: () -> Unit
-    ) {
-        val roomDocument = db.collection("rooms").document(roomId)
-
-        roomDocument.update("users", FieldValue.arrayUnion(userId))
-            .addOnSuccessListener {
-                Log.d("App", "User $userId successfully added")
-                onSuccess.invoke()
-            }
-            .addOnFailureListener { exception ->
-                Log.d("App", "User $userId not added. ${exception.toString()}")
-                onFailure.invoke()
-            }
-    }
-
     override fun createRoomAsAdmin(
         adminUserId: String,
         onSuccess: (String) -> Unit,
@@ -45,6 +26,25 @@ class RoomRepository @Inject constructor() : RoomHandler {
             }
             .addOnFailureListener { exception ->
                 Log.d("App", "Room creation failed. ${exception.toString()}")
+                onFailure.invoke()
+            }
+    }
+
+    override fun joinRoomAsUser(
+        roomId: String,
+        userId: String,
+        onSuccess: () -> Unit,
+        onFailure: () -> Unit
+    ) {
+        val roomDocument = db.collection("rooms").document(roomId)
+
+        roomDocument.update("users", FieldValue.arrayUnion(userId))
+            .addOnSuccessListener {
+                Log.d("App", "User $userId successfully added")
+                onSuccess.invoke()
+            }
+            .addOnFailureListener { exception ->
+                Log.d("App", "User $userId not added. ${exception.toString()}")
                 onFailure.invoke()
             }
     }
