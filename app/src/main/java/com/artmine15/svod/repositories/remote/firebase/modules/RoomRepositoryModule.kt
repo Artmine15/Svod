@@ -1,6 +1,6 @@
-package com.artmine15.svod.modules
+package com.artmine15.svod.repositories.remote.firebase.modules
 
-import com.artmine15.svod.repositories.firebase.RoomRepository
+import com.artmine15.svod.repositories.remote.firebase.RoomRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

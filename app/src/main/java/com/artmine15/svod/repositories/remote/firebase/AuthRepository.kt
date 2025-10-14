@@ -1,7 +1,7 @@
-package com.artmine15.svod.repositories.firebase
+package com.artmine15.svod.repositories.remote.firebase
 
 import android.util.Log
-import com.artmine15.svod.repositories.interfaces.AuthHandler
+import com.artmine15.svod.repositories.remote.interfaces.AuthHandler
 import com.google.firebase.firestore.FirebaseFirestore
 import jakarta.inject.Inject
 

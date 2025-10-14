@@ -1,8 +1,8 @@
-package com.artmine15.svod.repositories.firebase
+package com.artmine15.svod.repositories.remote.firebase
 
 import android.util.Log
 import com.artmine15.svod.enums.Lessons
-import com.artmine15.svod.repositories.interfaces.HomeworkHandler
+import com.artmine15.svod.repositories.remote.interfaces.HomeworkHandler
 import com.google.firebase.firestore.FirebaseFirestore
 import jakarta.inject.Inject
 import kotlinx.datetime.LocalDate
@@ -30,10 +30,16 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
     override fun updateField(
         roomId: String,
         date: LocalDate,
-        fieldName: String,
+        lessonField: Lessons,
         fieldValue: String,
     ) {
-
-
+        db.collection("rooms").document(roomId).collection("homeworks").document(date.toString())
+            .update(lessonField.name, fieldValue)
+            .addOnSuccessListener {
+                Log.d("App", "Field ${lessonField.name} has new value: $fieldValue")
+            }
+            .addOnFailureListener { exception ->
+                Log.d("App", "Field ${lessonField.name} updating failed. ${exception.toString()}")
+            }
     }
 }

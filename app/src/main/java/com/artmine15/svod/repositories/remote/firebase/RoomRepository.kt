@@ -1,13 +1,11 @@
-package com.artmine15.svod.repositories.firebase
+package com.artmine15.svod.repositories.remote.firebase
 
 import android.util.Log
-import com.artmine15.svod.repositories.interfaces.RoomHandler
+import com.artmine15.svod.repositories.remote.interfaces.RoomHandler
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.getField
 import jakarta.inject.Inject
 import kotlin.collections.listOf
-import kotlin.collections.mutableListOf
 
 class RoomRepository @Inject constructor() : RoomHandler {
     val db = FirebaseFirestore.getInstance()
