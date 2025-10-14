@@ -14,11 +14,20 @@ class AuthViewModel @Inject constructor(
     val authRepository: AuthRepository,
     val localUserDataRepository: LocalUserDataRepository
 ) : ViewModel() {
-    fun createNewUser(name: String){
-        authRepository.createUser(name, onSuccess = { userId ->
-            viewModelScope.launch {
-                localUserDataRepository.saveValue(LocalUserDataKeys.USER_ID, userId)
-            }
-        })
+    fun createNewUser(
+        name: String,
+        onSuccess: () -> Unit,
+        onFailure: () -> Unit
+    ){
+        authRepository.createUser(
+            name,
+            onSuccess = { userId ->
+                viewModelScope.launch {
+                    localUserDataRepository.saveValue(LocalUserDataKeys.USER_ID, userId)
+                }
+                onSuccess.invoke()
+            },
+            onFailure = onFailure
+        )
     }
 }

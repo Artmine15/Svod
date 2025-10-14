@@ -16,7 +16,7 @@ import com.artmine15.svod.viewmodels.AuthViewModel
 @Composable
 fun AuthScreen(){
     val authViewModel = hiltViewModel<AuthViewModel>()
-    val textFieldState = rememberTextFieldState(authViewModel.getName())
+    val textFieldState = rememberTextFieldState("")
     Column(
         modifier = Modifier
             .fillMaxSize(),
