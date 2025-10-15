@@ -11,8 +11,28 @@ import jakarta.inject.Inject
 class NavigationViewModel @Inject constructor() : ViewModel() {
     val backStack = mutableStateListOf<NavKey>((AuthScreenKey))
 
+    var isTemporaryScreensEnabled = false
+    var temporaryScreensCount = 0
+    var temporaryEndScreenKey: NavKey = AuthScreenKey
+
     fun navigateTo(key: NavKey){
         backStack.add(key)
+
+        if(isTemporaryScreensEnabled){
+            temporaryScreensCount++
+            if(backStack.last() == temporaryEndScreenKey){
+                for(i in 0 until temporaryScreensCount){
+                    backStack.removeLastOrNull()
+                }
+                isTemporaryScreensEnabled = false
+            }
+        }
+    }
+
+    fun temporaryNavigateTo(startKey: NavKey, endKey: NavKey){
+        isTemporaryScreensEnabled = true
+        temporaryEndScreenKey = endKey
+        navigateTo(startKey)
     }
 
     fun navigateBack(){
