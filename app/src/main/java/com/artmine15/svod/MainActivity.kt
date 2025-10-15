@@ -12,6 +12,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.artmine15.svod.ui.screens.AuthScreen
+import com.artmine15.svod.ui.screens.RoomCreationScreen
 import com.artmine15.svod.ui.screens.RoomHandlingScreen
 import com.artmine15.svod.ui.theme.SvodTheme
 import com.artmine15.svod.viewmodels.NavigationViewModel
@@ -31,11 +32,14 @@ class MainActivity : ComponentActivity() {
                         backStack = navigationViewModel.backStack,
                         onBack = { navigationViewModel.navigateBack() },
                         entryProvider = entryProvider{
-                            entry(AuthenticationScreenKey) {
+                            entry(AuthScreenKey) {
                                 AuthScreen()
                             }
                             entry(RoomHandlingScreenKey) {
                                 RoomHandlingScreen()
+                            }
+                            entry(RoomCreationScreenKey) {
+                                RoomCreationScreen()
                             }
                         }
                     )
