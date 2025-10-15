@@ -23,7 +23,6 @@ import com.artmine15.svod.RoomHandlingScreenKey
 import com.artmine15.svod.viewmodels.AuthViewModel
 import com.artmine15.svod.viewmodels.NavigationViewModel
 
-@Preview
 @Composable
 fun AuthScreen(){
     val authViewModel = hiltViewModel<AuthViewModel>()

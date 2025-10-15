@@ -12,6 +12,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.artmine15.svod.ui.screens.AuthScreen
+import com.artmine15.svod.ui.screens.RoomHandlingScreen
 import com.artmine15.svod.ui.theme.SvodTheme
 import com.artmine15.svod.viewmodels.NavigationViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,7 +35,7 @@ class MainActivity : ComponentActivity() {
                                 AuthScreen()
                             }
                             entry(RoomHandlingScreenKey) {
-                                AuthScreen()
+                                RoomHandlingScreen()
                             }
                         }
                     )
