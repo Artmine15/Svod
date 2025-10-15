@@ -3,3 +3,9 @@ package com.artmine15.svod
 import androidx.navigation3.runtime.NavKey
 
 object AuthenticationScreenKey : NavKey
+object RoomHandlingScreenKey : NavKey
+
+object RoomJoiningScreenKey : NavKey
+object RoomCreationScreenKey : NavKey
+
+object CurrentRoomScreenKey : NavKey

@@ -1,6 +1,7 @@
 package com.artmine15.svod.repositories.remote.firebase
 
 import android.util.Log
+import com.artmine15.svod.constants.remote.RepositoryConstants
 import com.artmine15.svod.enums.Lessons
 import com.artmine15.svod.repositories.remote.interfaces.HomeworkHandler
 import com.google.firebase.firestore.FirebaseFirestore
@@ -22,7 +23,7 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
         onSuccess: () -> Unit,
         onFailure: () -> Unit
     ) {
-        db.collection("rooms").document(roomId).collection("homeworks").document(date.toString())
+        db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId).collection(RepositoryConstants.HOMEWORKS_COLLECTION).document(date.toString())
             .set(lessonsMap)
             .addOnSuccessListener {
                 Log.d("App", "Homework initialized. Date: $date")
@@ -42,7 +43,7 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
         onSuccess: () -> Unit,
         onFailure: () -> Unit
     ) {
-        val homeworkDocument = db.collection("rooms").document(roomId).collection("homeworks").document(date.toString())
+        val homeworkDocument = db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId).collection(RepositoryConstants.HOMEWORKS_COLLECTION).document(date.toString())
 
         var isInitialized = false
         homeworkDocument

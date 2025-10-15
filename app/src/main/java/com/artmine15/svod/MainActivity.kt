@@ -33,6 +33,9 @@ class MainActivity : ComponentActivity() {
                             entry(AuthenticationScreenKey) {
                                 AuthScreen()
                             }
+                            entry(RoomHandlingScreenKey) {
+                                AuthScreen()
+                            }
                         }
                     )
                 }

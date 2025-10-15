@@ -1,6 +1,7 @@
 package com.artmine15.svod.repositories.remote.firebase
 
 import android.util.Log
+import com.artmine15.svod.constants.remote.RepositoryConstants
 import com.artmine15.svod.repositories.remote.interfaces.AuthHandler
 import com.google.firebase.firestore.FirebaseFirestore
 import jakarta.inject.Inject
@@ -13,7 +14,7 @@ class AuthRepository @Inject constructor() : AuthHandler {
             "name" to userName
         )
 
-        db.collection("users")
+        db.collection(RepositoryConstants.USERS_COLLECTION)
              .add(userMap)
              .addOnSuccessListener { documentReference ->
                  Log.d("App", "Success with id ${documentReference.id}")

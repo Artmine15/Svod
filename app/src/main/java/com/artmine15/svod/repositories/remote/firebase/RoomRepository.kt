@@ -1,6 +1,7 @@
 package com.artmine15.svod.repositories.remote.firebase
 
 import android.util.Log
+import com.artmine15.svod.constants.remote.RepositoryConstants
 import com.artmine15.svod.repositories.remote.interfaces.RoomHandler
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -20,7 +21,7 @@ class RoomRepository @Inject constructor() : RoomHandler {
             "userIds" to listOf<String>()
         )
 
-        db.collection("rooms").add(usersMap)
+        db.collection(RepositoryConstants.ROOMS_COLLECTION).add(usersMap)
             .addOnSuccessListener { documentReference ->
                 Log.d("App", "Room creation success, id: ${documentReference.id}")
                 onSuccess.invoke(documentReference.id)
@@ -36,7 +37,7 @@ class RoomRepository @Inject constructor() : RoomHandler {
         onSuccess: (adminUserId: String) -> Unit,
         onFailure: () -> Unit,
     ) {
-        db.collection("rooms").document(roomId)
+        db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId)
             .get()
             .addOnSuccessListener { documentSnapshot ->
                 val adminUserId = documentSnapshot.get("adminUserId") as String
@@ -57,7 +58,7 @@ class RoomRepository @Inject constructor() : RoomHandler {
         onSuccess: () -> Unit,
         onFailure: () -> Unit
     ) {
-        val roomDocument = db.collection("rooms").document(roomId)
+        val roomDocument = db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId)
 
         roomDocument.update("users", FieldValue.arrayUnion(userId))
             .addOnSuccessListener {
