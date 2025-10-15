@@ -5,10 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.artmine15.svod.datastore.LocalUserDataKeys
 import com.artmine15.svod.repositories.datastore.LocalUserDataRepository
 import com.artmine15.svod.repositories.remote.firebase.RoomRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
+@HiltViewModel
 class RoomViewModel @Inject constructor(
     val localUserDataRepository: LocalUserDataRepository,
     val roomRepository: RoomRepository

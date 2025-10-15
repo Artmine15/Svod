@@ -7,10 +7,12 @@ import com.artmine15.svod.enums.Lessons
 import com.artmine15.svod.repositories.datastore.LocalUserDataRepository
 import com.artmine15.svod.repositories.remote.firebase.HomeworkRepository
 import com.artmine15.svod.repositories.remote.firebase.RoomRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.async
 import kotlinx.datetime.LocalDate
 
+@HiltViewModel
 class HomeworkViewModel @Inject constructor(
     val localUserDataRepository: LocalUserDataRepository,
     val roomRepository: RoomRepository,

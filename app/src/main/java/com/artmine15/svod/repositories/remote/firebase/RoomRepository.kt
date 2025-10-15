@@ -60,7 +60,7 @@ class RoomRepository @Inject constructor() : RoomHandler {
     ) {
         val roomDocument = db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId)
 
-        roomDocument.update("users", FieldValue.arrayUnion(userId))
+        roomDocument.update("userIds", FieldValue.arrayUnion(userId))
             .addOnSuccessListener {
                 Log.d("App", "User $userId successfully added")
                 onSuccess.invoke()
