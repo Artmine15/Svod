@@ -32,19 +32,28 @@ class RoomViewModel @Inject constructor(
             onSuccess = { roomId ->
                 viewModelScope.launch {
                     localUserDataRepository.saveValue(LocalUserDataKeys.CURRENT_ROOM_ID, roomId)
+                    onSuccess.invoke()
                 }
-                onSuccess.invoke()
             },
             onFailure = onFailure
         )
     }
 
     suspend fun joinRoomAsUser(
-        roomId: String,
+        onRoomDoNotHaveCurrentRoom: () -> Unit,
         onUserNotAuth: () -> Unit,
         onSuccess: () -> Unit,
         onFailure: () -> Unit
     ){
+        val roomId = viewModelScope.async {
+            return@async localUserDataRepository.getValue(LocalUserDataKeys.CURRENT_ROOM_ID, "")
+        }.await()
+
+        if(roomId == "") {
+            onRoomDoNotHaveCurrentRoom.invoke()
+            return
+        }
+
         val userId = viewModelScope.async {
             return@async localUserDataRepository.getValue(LocalUserDataKeys.USER_ID, "")
         }.await()
