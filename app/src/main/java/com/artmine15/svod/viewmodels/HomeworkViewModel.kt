@@ -26,7 +26,7 @@ class HomeworkViewModel @Inject constructor(
         onUserNotInRoom: () -> Unit,
         onUserNotAdmin: () -> Unit,
         onSuccess: () -> Unit,
-        onFailure: () -> Unit
+        onFailure: (exception: Exception) -> Unit
     ){
         val currentUserId = viewModelScope.async { return@async localUserDataRepository.getValue(LocalUserDataKeys.USER_ID, "") }.await()
         if(currentUserId == ""){

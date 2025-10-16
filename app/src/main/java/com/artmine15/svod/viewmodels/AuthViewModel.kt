@@ -17,7 +17,7 @@ class AuthViewModel @Inject constructor(
     fun createNewUser(
         name: String,
         onSuccess: () -> Unit,
-        onFailure: () -> Unit
+        onFailure: (exception: Exception) -> Unit
     ){
         authRepository.createUser(
             name,

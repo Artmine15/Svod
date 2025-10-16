@@ -18,7 +18,7 @@ class RoomViewModel @Inject constructor(
     suspend fun createRoomAsAdmin(
         onUserNotAuth: () -> Unit,
         onSuccess: () -> Unit,
-        onFailure: () -> Unit
+        onFailure: (exception: Exception) -> Unit
     ){
         val adminUserId = viewModelScope.async {
             return@async localUserDataRepository.getValue(LocalUserDataKeys.USER_ID, "")
@@ -45,7 +45,7 @@ class RoomViewModel @Inject constructor(
         onRoomDoNotHaveCurrentRoom: () -> Unit,
         onUserNotAuth: () -> Unit,
         onSuccess: () -> Unit,
-        onFailure: () -> Unit
+        onFailure: (exception: Exception) -> Unit
     ){
         val roomId = viewModelScope.async {
             return@async localUserDataRepository.getValue(LocalUserDataKeys.CURRENT_ROOM_ID, "")

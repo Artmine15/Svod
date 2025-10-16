@@ -8,7 +8,7 @@ interface HomeworkHandler {
         roomId: String,
         date: LocalDate,
         onSuccess: () -> Unit,
-        onFailure: () -> Unit
+        onFailure: (exception: Exception) -> Unit
     )
     fun updateField(
         roomId: String,
@@ -16,6 +16,6 @@ interface HomeworkHandler {
         lessonField: Lessons,
         fieldValue: String,
         onSuccess: () -> Unit,
-        onFailure: () -> Unit
+        onFailure: (exception: Exception) -> Unit
     )
 }

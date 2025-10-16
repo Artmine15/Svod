@@ -6,22 +6,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.artmine15.svod.datastore.LocalUserDataKeys
-import com.artmine15.svod.viewmodels.AuthViewModel
-import kotlinx.coroutines.async
+import com.artmine15.svod.AuthScreenKey
+import com.artmine15.svod.CurrentRoomScreenKey
+import com.artmine15.svod.RoomHandlingScreenKey
+import com.artmine15.svod.viewmodels.InitializationViewModel
+import com.artmine15.svod.viewmodels.NavigationViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun CurrentRoomScreen(){
-    val localUserDataRepository = hiltViewModel<AuthViewModel>().localUserDataRepository
+    val navigationViewModel: NavigationViewModel = hiltViewModel()
+    val initializationViewModel: InitializationViewModel = hiltViewModel()
+
     val scope = rememberCoroutineScope()
 
     Surface(
@@ -32,16 +32,17 @@ fun CurrentRoomScreen(){
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            var roomId by remember { mutableStateOf("") }
-            LaunchedEffect(this) {
-                roomId = scope.async {
-                    return@async localUserDataRepository.getValue(LocalUserDataKeys.CURRENT_ROOM_ID, "")
-                }.await()
-            }
 
-            Text(
-                text = roomId
-            )
+            if(initializationViewModel.currentUserData.isInitialized){
+                Text(
+                    text = initializationViewModel.currentUserData.roomId + " ${navigationViewModel.backStack.size}"
+                )
+            }
+            else{
+                Text(
+                    text = "Загрузка... наверное"
+                )
+            }
         }
     }
 }

@@ -4,6 +4,13 @@ interface AuthHandler {
     fun createUser(
         userName: String,
         onSuccess: ((roomId: String) -> Unit),
-        onFailure: () -> Unit
+        onFailure: (exception: Exception) -> Unit
+    )
+
+    suspend fun isUserExists(
+        userId: String,
+        onNoUser: () -> Unit,
+        onSuccess: () -> Unit,
+        onFailure: (exception: Exception) -> Unit
     )
 }

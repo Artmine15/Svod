@@ -13,9 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.artmine15.svod.AuthScreenKey
 import com.artmine15.svod.CurrentRoomScreenKey
-import com.artmine15.svod.RoomCreationScreenKey
-import com.artmine15.svod.datastore.LocalUserDataKeys
-import com.artmine15.svod.repositories.datastore.LocalUserDataRepository
 import com.artmine15.svod.viewmodels.NavigationViewModel
 import com.artmine15.svod.viewmodels.RoomViewModel
 import kotlinx.coroutines.launch
@@ -47,8 +44,8 @@ fun RoomHandlingScreen(){
                                 scope.launch {
                                     roomViewModel.joinRoomAsUser(
                                         onRoomDoNotHaveCurrentRoom = {},
-                                        onUserNotAuth = { navigationViewModel.navigateTo(AuthScreenKey) },
-                                        onSuccess = { navigationViewModel.navigateTo(CurrentRoomScreenKey) },
+                                        onUserNotAuth = { navigationViewModel.replaceTo(AuthScreenKey, 1000) },
+                                        onSuccess = { navigationViewModel.replaceTo(CurrentRoomScreenKey, 1000) },
                                         onFailure = {}
                                     )
                                 }

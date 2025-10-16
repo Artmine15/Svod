@@ -21,7 +21,7 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
         roomId: String,
         date: LocalDate,
         onSuccess: () -> Unit,
-        onFailure: () -> Unit
+        onFailure: (exception: Exception) -> Unit
     ) {
         db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId).collection(RepositoryConstants.HOMEWORKS_COLLECTION).document(date.toString())
             .set(lessonsMap)
@@ -31,7 +31,7 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
             }
             .addOnFailureListener { exception ->
                 Log.d("App", "Homework initialization failed. ${exception.toString()}")
-                onFailure.invoke()
+                onFailure.invoke(exception)
             }
     }
 
@@ -41,7 +41,7 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
         lessonField: Lessons,
         fieldValue: String,
         onSuccess: () -> Unit,
-        onFailure: () -> Unit
+        onFailure: (exception: Exception) -> Unit
     ) {
         val homeworkDocument = db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId).collection(RepositoryConstants.HOMEWORKS_COLLECTION).document(date.toString())
 
@@ -49,9 +49,10 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
         homeworkDocument
             .get()
             .addOnSuccessListener { documentSnapshot ->
-                if(documentSnapshot != null && documentSnapshot.exists()){
-                    isInitialized = true
-                }
+                isInitialized = documentSnapshot != null && documentSnapshot.exists()
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
             }
         if(!isInitialized){
             initializeHomework(
@@ -64,7 +65,7 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
             )
         }
         if(!isInitialized){
-            onFailure.invoke()
+            onFailure.invoke(Exception(""))
             return
         }
 
@@ -76,7 +77,7 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
             }
             .addOnFailureListener { exception ->
                 Log.d("App", "Field ${lessonField.name} updating failed. ${exception.toString()}")
-                onFailure.invoke()
+                onFailure.invoke(exception)
             }
     }
 }

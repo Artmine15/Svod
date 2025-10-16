@@ -14,7 +14,7 @@ class RoomRepository @Inject constructor() : RoomHandler {
     override fun createRoomAsAdmin(
         adminUserId: String,
         onSuccess: (String) -> Unit,
-        onFailure: () -> Unit
+        onFailure: (exception: Exception) -> Unit
     ) {
         val usersMap = hashMapOf(
             "adminUserId" to adminUserId,
@@ -23,32 +23,33 @@ class RoomRepository @Inject constructor() : RoomHandler {
 
         db.collection(RepositoryConstants.ROOMS_COLLECTION).add(usersMap)
             .addOnSuccessListener { documentReference ->
-                Log.d("App", "Room creation success, id: ${documentReference.id}")
+                Log.d("createRoomAsAdmin()", "Room creation success, id: ${documentReference.id}")
                 onSuccess.invoke(documentReference.id)
             }
             .addOnFailureListener { exception ->
-                Log.d("App", "Room creation failed. ${exception.toString()}")
-                onFailure.invoke()
+                Log.d("createRoomAsAdmin()", "Room creation failed. ${exception.toString()}")
+                onFailure.invoke(exception)
             }
     }
 
     override fun getAdminIdOfRoom(
         roomId: String,
         onSuccess: (adminUserId: String) -> Unit,
-        onFailure: () -> Unit,
+        onFailure: (exception: Exception) -> Unit,
     ) {
         db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId)
             .get()
             .addOnSuccessListener { documentSnapshot ->
                 val adminUserId = documentSnapshot.get("adminUserId") as String
 
-                Log.d("App", "Admin of the room: $adminUserId")
+                Log.d("getAdminIdOfRoom()", "Admin of the room: $adminUserId")
                 if(documentSnapshot != null && documentSnapshot.exists()){
                     onSuccess.invoke(adminUserId)
                 }
             }
             .addOnFailureListener { exception ->
-                Log.d("App", "Admin not found: ${exception.toString()}")
+                Log.d("getAdminIdOfRoom()", "Admin not found: ${exception.toString()}")
+                onFailure(exception)
             }
     }
 
@@ -56,18 +57,44 @@ class RoomRepository @Inject constructor() : RoomHandler {
         roomId: String,
         userId: String,
         onSuccess: () -> Unit,
-        onFailure: () -> Unit
+        onFailure: (exception: Exception) -> Unit
     ) {
-        val roomDocument = db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId)
-
-        roomDocument.update("userIds", FieldValue.arrayUnion(userId))
+        db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId)
+            .update("userIds", FieldValue.arrayUnion(userId))
             .addOnSuccessListener {
-                Log.d("App", "User $userId successfully added")
+                Log.d("joinRoomAsUser()", "User $userId successfully added")
                 onSuccess.invoke()
             }
             .addOnFailureListener { exception ->
-                Log.d("App", "User $userId not added. ${exception.toString()}")
-                onFailure.invoke()
+                Log.d("joinRoomAsUser()", "User $userId not added. ${exception.toString()}")
+                onFailure.invoke(exception)
+            }
+    }
+
+    override suspend fun isUserInRoom(
+        roomId: String,
+        userId: String,
+        onNoRoom: () -> Unit,
+        onNoUserInRoom: () -> Unit,
+        onSuccess: () -> Unit,
+        onFailure: (exception: Exception) -> Unit,
+    ){
+        db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot != null && documentSnapshot.exists()) {
+                    val userIds = documentSnapshot.get("userIds") as List<*>
+                    if (userIds.contains(userId)) onSuccess.invoke() else onNoUserInRoom.invoke()
+
+                    Log.d("isUserInRoom()", "$userId in room $roomId")
+                }
+                else{
+                    onNoRoom.invoke()
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.d("isUserInRoom()", exception.toString())
+                onFailure.invoke(exception)
             }
     }
 }

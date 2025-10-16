@@ -57,7 +57,7 @@ fun AuthScreen(){
                 onClick = {
                     authViewModel.createNewUser(
                         name = textFieldState.text.toString(),
-                        onSuccess = { navigationViewModel.navigateTo(RoomHandlingScreenKey) },
+                        onSuccess = { navigationViewModel.replaceTo(RoomHandlingScreenKey, 1000) },
                         onFailure = { textFieldSupportTextState = "Errorrrr" }
                     )
                 }
