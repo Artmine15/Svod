@@ -41,35 +41,62 @@ class RoomViewModel @Inject constructor(
         )
     }
 
-    suspend fun joinRoomAsUser(
-        onRoomDoNotHaveCurrentRoom: () -> Unit,
-        onUserNotAuth: () -> Unit,
+    fun joinRoomAsUser(
         onSuccess: () -> Unit,
         onFailure: (exception: Exception) -> Unit
     ){
-        val roomId = viewModelScope.async {
-            return@async localUserDataRepository.getValue(LocalUserDataKeys.CURRENT_ROOM_ID, "")
-        }.await()
+        viewModelScope.launch {
+            val userId = viewModelScope.async {
+                return@async localUserDataRepository.getValue(LocalUserDataKeys.USER_ID, "")
+            }.await()
+            if(userId == "") {
+                onFailure.invoke(Exception("UserId is empty"))
+                return@launch
+            }
 
+            val roomId = viewModelScope.async {
+                return@async localUserDataRepository.getValue(LocalUserDataKeys.CURRENT_ROOM_ID, "")
+            }.await()
+            if(roomId == "") {
+                onFailure.invoke(Exception("RoomId is empty"))
+                return@launch
+            }
+
+            roomRepository.joinRoomAsUser(
+                userId = userId,
+                roomId = roomId,
+                onSuccess = onSuccess,
+                onFailure = onFailure
+            )
+        }
+    }
+
+    fun joinRoomAsUser(
+        roomId: String,
+        onSuccess: () -> Unit,
+        onFailure: (exception: Exception) -> Unit
+    ){
         if(roomId == "") {
-            onRoomDoNotHaveCurrentRoom.invoke()
+            onFailure.invoke(Exception("RoomId is empty"))
             return
         }
+        viewModelScope.launch {
+            val userId = viewModelScope.async {
+                return@async localUserDataRepository.getValue(LocalUserDataKeys.USER_ID, "")
+            }.await()
+            if(userId == "") {
+                onFailure.invoke(Exception("UserId is empty"))
+                return@launch
+            }
 
-        val userId = viewModelScope.async {
-            return@async localUserDataRepository.getValue(LocalUserDataKeys.USER_ID, "")
-        }.await()
+            localUserDataRepository.saveValue(LocalUserDataKeys.CURRENT_ROOM_ID, roomId)
 
-        if(userId == "") {
-            onUserNotAuth.invoke()
-            return
+            roomRepository.joinRoomAsUser(
+                userId = userId,
+                roomId = roomId,
+                onSuccess = onSuccess,
+                onFailure = onFailure
+            )
         }
-
-        roomRepository.joinRoomAsUser(
-            roomId = roomId,
-            userId = userId,
-            onSuccess = onSuccess,
-            onFailure = onFailure
-        )
     }
 }

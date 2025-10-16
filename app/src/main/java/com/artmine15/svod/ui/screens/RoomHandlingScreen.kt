@@ -1,5 +1,6 @@
 package com.artmine15.svod.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,14 +14,16 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.artmine15.svod.AuthScreenKey
 import com.artmine15.svod.CurrentRoomScreenKey
+import com.artmine15.svod.viewmodels.InitializationViewModel
 import com.artmine15.svod.viewmodels.NavigationViewModel
 import com.artmine15.svod.viewmodels.RoomViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun RoomHandlingScreen(){
-    val navigationViewModel = hiltViewModel<NavigationViewModel>()
-    val roomViewModel = hiltViewModel<RoomViewModel>()
+    val navigationViewModel: NavigationViewModel = hiltViewModel()
+    val roomViewModel: RoomViewModel = hiltViewModel()
+    val initializationViewModel: InitializationViewModel = hiltViewModel()
 
     val scope = rememberCoroutineScope()
 
@@ -41,14 +44,10 @@ fun RoomHandlingScreen(){
                         roomViewModel.createRoomAsAdmin(
                             onUserNotAuth = { navigationViewModel.navigateTo(AuthScreenKey) },
                             onSuccess = {
-                                scope.launch {
-                                    roomViewModel.joinRoomAsUser(
-                                        onRoomDoNotHaveCurrentRoom = {},
-                                        onUserNotAuth = { navigationViewModel.replaceTo(AuthScreenKey, 1000) },
-                                        onSuccess = { navigationViewModel.replaceTo(CurrentRoomScreenKey, 1000) },
-                                        onFailure = {}
-                                    )
-                                }
+                                roomViewModel.joinRoomAsUser(
+                                    onSuccess = { navigationViewModel.replaceTo(CurrentRoomScreenKey, 1000) },
+                                    onFailure = {}
+                                )
                             },
                             onFailure = {  }
                         )

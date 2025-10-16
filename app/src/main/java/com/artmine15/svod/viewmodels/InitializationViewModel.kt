@@ -106,4 +106,32 @@ class InitializationViewModel @Inject constructor(
         }
         else if(auth.currentUser?.isAnonymous == false) onFailure.invoke(Exception("No anonymous registration"))
     }
+
+    suspend fun syncLocalUserId(){
+        currentUserData = currentUserData.copy(
+            userId = localUserDataRepository.getValue(
+                key = LocalUserDataKeys.USER_ID,
+                initial = ""
+            )
+        )
+    }
+
+    suspend fun syncLocalUserId(newValue: String){
+        localUserDataRepository.saveValue(LocalUserDataKeys.USER_ID, newValue)
+        currentUserData = currentUserData.copy(userId = newValue)
+    }
+
+    suspend fun syncLocalCurrentRoomId(){
+        currentUserData = currentUserData.copy(
+            userId = localUserDataRepository.getValue(
+                key = LocalUserDataKeys.CURRENT_ROOM_ID,
+                initial = ""
+            )
+        )
+    }
+
+    suspend fun syncLocalCurrentRoomId(newValue: String){
+        localUserDataRepository.saveValue(LocalUserDataKeys.CURRENT_ROOM_ID, newValue)
+        currentUserData = currentUserData.copy(userId = newValue)
+    }
 }

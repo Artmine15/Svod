@@ -54,8 +54,8 @@ class RoomRepository @Inject constructor() : RoomHandler {
     }
 
     override fun joinRoomAsUser(
-        roomId: String,
         userId: String,
+        roomId: String,
         onSuccess: () -> Unit,
         onFailure: (exception: Exception) -> Unit
     ) {
@@ -66,14 +66,14 @@ class RoomRepository @Inject constructor() : RoomHandler {
                 onSuccess.invoke()
             }
             .addOnFailureListener { exception ->
-                Log.d("joinRoomAsUser()", "User $userId not added. ${exception.toString()}")
+                Log.d("joinRoomAsUser()", "User $userId not added to room $roomId. ${exception.toString()}")
                 onFailure.invoke(exception)
             }
     }
 
     override suspend fun isUserInRoom(
-        roomId: String,
         userId: String,
+        roomId: String,
         onNoRoom: () -> Unit,
         onNoUserInRoom: () -> Unit,
         onSuccess: () -> Unit,

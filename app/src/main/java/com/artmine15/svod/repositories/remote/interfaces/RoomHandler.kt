@@ -14,15 +14,15 @@ interface RoomHandler {
     )
 
     fun joinRoomAsUser(
-        roomId: String,
         userId: String,
+        roomId: String,
         onSuccess: () -> Unit,
         onFailure: (exception: Exception) -> Unit
     )
 
-    suspend  fun isUserInRoom(
-        roomId: String,
+    suspend fun isUserInRoom(
         userId: String,
+        roomId: String,
         onNoRoom: () -> Unit,
         onNoUserInRoom: () -> Unit,
         onSuccess: () -> Unit,

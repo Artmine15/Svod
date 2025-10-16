@@ -24,6 +24,7 @@ import com.artmine15.svod.ui.screens.RoomHandlingScreen
 import com.artmine15.svod.ui.theme.SvodTheme
 import com.artmine15.svod.viewmodels.InitializationViewModel
 import com.artmine15.svod.viewmodels.NavigationViewModel
+import com.artmine15.svod.viewmodels.RoomViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -31,23 +32,40 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        var roomId: String? = ""
+        intent?.data?.let { uri ->
+            if(uri.scheme == "svod" && uri.host == "join"){
+                roomId = uri.getQueryParameter("roomId")
+            }
+        }
         enableEdgeToEdge()
         setContent {
             SvodTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    val navigationViewModel = hiltViewModel<NavigationViewModel>()
+                    val navigationViewModel: NavigationViewModel = hiltViewModel()
+                    val initializationViewModel: InitializationViewModel = hiltViewModel()
+                    val roomViewModel: RoomViewModel = hiltViewModel()
                     NavDisplay(
                         modifier = Modifier.padding(innerPadding),
                         backStack = navigationViewModel.backStack,
                         onBack = { navigationViewModel.navigateBack() },
                         entryProvider = entryProvider{
                             entry(CurrentRoomScreenKey) {
-                                val initializationViewModel = hiltViewModel<InitializationViewModel>()
-
                                 LaunchedEffect(Unit) {
                                     initializationViewModel.tryInitializeAuth(
                                         onUserNotAuth = { navigationViewModel.replaceTo(AuthScreenKey, 1000) },
-                                        onNoCurrentRoom = { navigationViewModel.replaceTo(RoomHandlingScreenKey, 1000) },
+                                        onNoCurrentRoom = {
+                                            if(roomId == null || roomId == ""){
+                                                navigationViewModel.replaceTo(RoomHandlingScreenKey, 1000)
+                                            }
+                                            else{
+                                                roomViewModel.joinRoomAsUser(
+                                                    roomId = roomId,
+                                                    onSuccess = {},
+                                                    onFailure = {}
+                                                )
+                                            }
+                                        },
                                         onNoUserInCurrentRoom = { navigationViewModel.replaceTo(RoomHandlingScreenKey, 1000)  },
                                         onSuccess = {},
                                         onFailure = {}
@@ -63,7 +81,7 @@ class MainActivity : ComponentActivity() {
                     )
                     Box(modifier = Modifier.padding(innerPadding)){
                         Text(
-                            text = "${navigationViewModel.backStack.map { it }}\n${navigationViewModel.backStack.size}",
+                            text = "userId: ${initializationViewModel.currentUserData.userId}\nroomId: ${initializationViewModel.currentUserData.roomId}\n${navigationViewModel.backStack.size}\n${navigationViewModel.backStack.map { it }}",
                             fontSize = 10.sp
                         )
                     }
