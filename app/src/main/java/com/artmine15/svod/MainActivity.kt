@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -26,7 +24,6 @@ import com.artmine15.svod.viewmodels.InitializationViewModel
 import com.artmine15.svod.viewmodels.NavigationViewModel
 import com.artmine15.svod.viewmodels.RoomViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -34,7 +31,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         var roomId: String? = ""
         intent?.data?.let { uri ->
-            if(uri.scheme == "svod" && uri.host == "join"){
+            if(uri.scheme == "https" && uri.host == "artmine15.github.io" && uri.path?.startsWith("/Svod/join") == true){
                 roomId = uri.getQueryParameter("roomId")
             }
         }
@@ -51,22 +48,31 @@ class MainActivity : ComponentActivity() {
                         onBack = { navigationViewModel.navigateBack() },
                         entryProvider = entryProvider{
                             entry(CurrentRoomScreenKey) {
+                                LaunchedEffect(roomId) {
+                                    if(roomId != "")
+                                        initializationViewModel.syncLocalCurrentRoomId(roomId ?: "")
+                                }
                                 LaunchedEffect(Unit) {
                                     initializationViewModel.tryInitializeAuth(
                                         onUserNotAuth = { navigationViewModel.replaceTo(AuthScreenKey, 1000) },
-                                        onNoCurrentRoom = {
+                                        onNoLocalCurrentRoom = {
+                                            navigationViewModel.replaceTo(RoomHandlingScreenKey, 1000)
+                                        },
+                                        onNoUserInCurrentRoom = {
                                             if(roomId == null || roomId == ""){
+                                                Log.d("LINK", "FAIL ROOMID: $roomId")
+
                                                 navigationViewModel.replaceTo(RoomHandlingScreenKey, 1000)
                                             }
                                             else{
+                                                Log.d("LINK", "JOINING IN: $roomId")
                                                 roomViewModel.joinRoomAsUser(
                                                     roomId = roomId,
-                                                    onSuccess = {},
+                                                    onSuccess = { Log.d("LINK", "Successfully JOIN IN: $roomId")},
                                                     onFailure = {}
                                                 )
                                             }
                                         },
-                                        onNoUserInCurrentRoom = { navigationViewModel.replaceTo(RoomHandlingScreenKey, 1000)  },
                                         onSuccess = {},
                                         onFailure = {}
                                     )
@@ -81,7 +87,7 @@ class MainActivity : ComponentActivity() {
                     )
                     Box(modifier = Modifier.padding(innerPadding)){
                         Text(
-                            text = "userId: ${initializationViewModel.currentUserData.userId}\nroomId: ${initializationViewModel.currentUserData.roomId}\n${navigationViewModel.backStack.size}\n${navigationViewModel.backStack.map { it }}",
+                            text = "userId: ${initializationViewModel.currentUserData.userId}\nroomId: ${initializationViewModel.currentUserData.roomId}\nroomIdLink: $roomId\n${navigationViewModel.backStack.size}\n${navigationViewModel.backStack.map { it }}",
                             fontSize = 10.sp
                         )
                     }

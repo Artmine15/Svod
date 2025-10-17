@@ -3,7 +3,6 @@ package com.artmine15.svod.viewmodels
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -33,7 +32,7 @@ class InitializationViewModel @Inject constructor(
 
     fun tryInitializeAuth(
         onUserNotAuth: () -> Unit,
-        onNoCurrentRoom: () -> Unit,
+        onNoLocalCurrentRoom: () -> Unit,
         onNoUserInCurrentRoom: () -> Unit,
         onSuccess: () -> Unit,
         onFailure: (exception: Exception) -> Unit
@@ -63,7 +62,7 @@ class InitializationViewModel @Inject constructor(
                     )
                 )
                 if (currentUserData.roomId == "") {
-                    onNoCurrentRoom.invoke()
+                    onNoLocalCurrentRoom.invoke()
                     Log.d("tryInitializeAuth()", "onNoCurrentRoom, return")
                     return@launch
                 }
@@ -83,7 +82,7 @@ class InitializationViewModel @Inject constructor(
                                 userId = currentUserData.userId,
                                 onNoRoom = {
                                     Log.d("tryInitializeAuth()", "onNoCurrentRoom")
-                                    onNoCurrentRoom.invoke()
+                                    onNoLocalCurrentRoom.invoke()
                                 },
                                 onNoUserInRoom = {
                                     Log.d("tryInitializeAuth()", "onNoCurrentRoom")
