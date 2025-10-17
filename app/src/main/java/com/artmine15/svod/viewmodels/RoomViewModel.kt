@@ -33,7 +33,7 @@ class RoomViewModel @Inject constructor(
             adminUserId = adminUserId,
             onSuccess = { roomId ->
                 viewModelScope.launch {
-                    localUserDataRepository.saveValue(LocalUserDataKeys.CURRENT_ROOM_ID, roomId)
+                    localUserDataRepository.saveValue(LocalUserDataKeys.ROOM_ID, roomId)
                     onSuccess.invoke()
                 }
             },
@@ -55,7 +55,7 @@ class RoomViewModel @Inject constructor(
             }
 
             val roomId = viewModelScope.async {
-                return@async localUserDataRepository.getValue(LocalUserDataKeys.CURRENT_ROOM_ID, "")
+                return@async localUserDataRepository.getValue(LocalUserDataKeys.ROOM_ID, "")
             }.await()
             if(roomId == "") {
                 onFailure.invoke(Exception("RoomId is empty"))
@@ -89,7 +89,7 @@ class RoomViewModel @Inject constructor(
                 return@launch
             }
 
-            localUserDataRepository.saveValue(LocalUserDataKeys.CURRENT_ROOM_ID, roomId)
+            localUserDataRepository.saveValue(LocalUserDataKeys.ROOM_ID, roomId)
 
             roomRepository.joinRoomAsUser(
                 userId = userId,

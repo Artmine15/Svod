@@ -1,6 +1,7 @@
 package com.artmine15.svod.repositories.remote.firebase
 
 import android.util.Log
+import com.artmine15.svod.LogTags
 import com.artmine15.svod.constants.remote.RepositoryConstants
 import com.artmine15.svod.repositories.remote.interfaces.RoomHandler
 import com.google.firebase.firestore.FieldValue
@@ -23,11 +24,11 @@ class RoomRepository @Inject constructor() : RoomHandler {
 
         db.collection(RepositoryConstants.ROOMS_COLLECTION).add(usersMap)
             .addOnSuccessListener { documentReference ->
-                Log.d("createRoomAsAdmin()", "Room creation success, id: ${documentReference.id}")
+                Log.d(LogTags.debug, "createRoomAsAdmin()/Room ${documentReference.id} created")
                 onSuccess.invoke(documentReference.id)
             }
             .addOnFailureListener { exception ->
-                Log.d("createRoomAsAdmin()", "Room creation failed. ${exception.toString()}")
+                Log.d(LogTags.debug, "createRoomAsAdmin()/Room creation failed. ${exception.toString()}")
                 onFailure.invoke(exception)
             }
     }
@@ -42,13 +43,13 @@ class RoomRepository @Inject constructor() : RoomHandler {
             .addOnSuccessListener { documentSnapshot ->
                 val adminUserId = documentSnapshot.get("adminUserId") as String
 
-                Log.d("getAdminIdOfRoom()", "Admin of the room: $adminUserId")
+                Log.d(LogTags.debug, "getAdminIdOfRoom()/AdminUserId of the room: $adminUserId")
                 if(documentSnapshot != null && documentSnapshot.exists()){
                     onSuccess.invoke(adminUserId)
                 }
             }
             .addOnFailureListener { exception ->
-                Log.d("getAdminIdOfRoom()", "Admin not found: ${exception.toString()}")
+                Log.d(LogTags.debug, "getAdminIdOfRoom()/Fail to get adminUserId: ${exception.toString()}")
                 onFailure(exception)
             }
     }
@@ -62,11 +63,11 @@ class RoomRepository @Inject constructor() : RoomHandler {
         db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId)
             .update("userIds", FieldValue.arrayUnion(userId))
             .addOnSuccessListener {
-                Log.d("joinRoomAsUser()", "User $userId successfully added")
+                Log.d(LogTags.debug, "joinRoomAsUser()/User $userId successfully added to room $roomId")
                 onSuccess.invoke()
             }
             .addOnFailureListener { exception ->
-                Log.d("joinRoomAsUser()", "User $userId not added to room $roomId. ${exception.toString()}")
+                Log.d(LogTags.debug, "joinRoomAsUser()/Fail to add user $userId to room $roomId. ${exception.toString()}")
                 onFailure.invoke(exception)
             }
     }
@@ -86,14 +87,15 @@ class RoomRepository @Inject constructor() : RoomHandler {
                     val userIds = documentSnapshot.get("userIds") as List<*>
                     if (userIds.contains(userId)) onSuccess.invoke() else onNoUserInRoom.invoke()
 
-                    Log.d("isUserInRoom()", "$userId in room $roomId")
+                    Log.d(LogTags.debug, "isUserInRoom()/User $userId listed in room $roomId")
                 }
                 else{
+                    Log.d(LogTags.debug, "isUserInRoom()/No room $roomId")
                     onNoRoom.invoke()
                 }
             }
             .addOnFailureListener { exception ->
-                Log.d("isUserInRoom()", exception.toString())
+                Log.d(LogTags.debug, exception.toString())
                 onFailure.invoke(exception)
             }
     }

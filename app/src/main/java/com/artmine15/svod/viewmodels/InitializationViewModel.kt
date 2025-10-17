@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.artmine15.svod.LogTags
 import com.artmine15.svod.datastore.LocalUserDataKeys
 import com.artmine15.svod.models.CurrentUserData
 import com.artmine15.svod.repositories.datastore.LocalUserDataRepository
@@ -31,9 +32,11 @@ class InitializationViewModel @Inject constructor(
     ))
 
     fun tryInitializeAuth(
+        onNoLocalUserId: () -> Unit,
+        onNoLocalRoomId: () -> Unit,
         onUserNotAuth: () -> Unit,
-        onNoLocalCurrentRoom: () -> Unit,
-        onNoUserInCurrentRoom: () -> Unit,
+        onNoRoom: () -> Unit,
+        onNoUserInRoom: () -> Unit,
         onSuccess: () -> Unit,
         onFailure: (exception: Exception) -> Unit
     ){
@@ -50,43 +53,41 @@ class InitializationViewModel @Inject constructor(
                     )
                 )
                 if (currentUserData.userId == "") {
-                    onUserNotAuth.invoke()
+                    onNoLocalUserId.invoke()
+                    Log.d(LogTags.debug, "tryInitializeAuth()/UserId ${currentUserData.userId} is invalid. onNoLocalUserId.invoke(). return")
                     return@launch
                 }
-                Log.d("tryInitializeAuth()", "Local UserId: ${currentUserData.userId}")
+                Log.d(LogTags.debug, "tryInitializeAuth()/Local UserId: ${currentUserData.userId}")
 
                 currentUserData = currentUserData.copy(
                     roomId = localUserDataRepository.getValue(
-                        LocalUserDataKeys.CURRENT_ROOM_ID,
+                        LocalUserDataKeys.ROOM_ID,
                         ""
                     )
                 )
                 if (currentUserData.roomId == "") {
-                    onNoLocalCurrentRoom.invoke()
-                    Log.d("tryInitializeAuth()", "onNoCurrentRoom, return")
+                    onNoLocalRoomId.invoke()
+                    Log.d(LogTags.debug, "tryInitializeAuth()/RoomId ${currentUserData.roomId} is invalid. onNoLocalRoomId.invoke(). return")
                     return@launch
                 }
-                Log.d("tryInitializeAuth()", "Local CurrentRoomId: ${currentUserData.roomId}")
+                Log.d(LogTags.debug, "tryInitializeAuth()/Local CurrentRoomId: ${currentUserData.roomId}")
 
                 authRepository.isUserExists(
                     userId = currentUserData.userId,
                     onNoUser = {
-                        Log.d("tryInitializeAuth()", "onNoCurrentRoom")
                         onUserNotAuth.invoke()
                     },
                     onSuccess = {
-                        Log.d("tryInitializeAuth()", "User exists")
+                        Log.d(LogTags.debug, "tryInitializeAuth()/isUserExists()/onSuccess")
                         viewModelScope.launch {
                             roomRepository.isUserInRoom(
                                 roomId = currentUserData.roomId,
                                 userId = currentUserData.userId,
                                 onNoRoom = {
-                                    Log.d("tryInitializeAuth()", "onNoCurrentRoom")
-                                    onNoLocalCurrentRoom.invoke()
+                                    onNoRoom.invoke()
                                 },
                                 onNoUserInRoom = {
-                                    Log.d("tryInitializeAuth()", "onNoCurrentRoom")
-                                    onNoUserInCurrentRoom.invoke()
+                                    onNoUserInRoom.invoke()
                                 },
                                 onSuccess = {
                                     currentUserData = currentUserData.copy(isInitialized = true)
@@ -97,13 +98,13 @@ class InitializationViewModel @Inject constructor(
                         }
                     },
                     onFailure = { exception ->
-                        Log.d("tryInitializeAuth()", exception.message.toString())
+                        Log.d(LogTags.debug, exception.message.toString())
                         onFailure.invoke(exception)
                     }
                 )
             }
         }
-        else if(auth.currentUser?.isAnonymous == false) onFailure.invoke(Exception("No anonymous registration"))
+        else if(auth.currentUser?.isAnonymous == false) onFailure.invoke(Exception("tryInitializeAuth()/No anonymous registration"))
     }
 
     suspend fun syncLocalUserId(){
@@ -120,17 +121,17 @@ class InitializationViewModel @Inject constructor(
         currentUserData = currentUserData.copy(userId = newValue)
     }
 
-    suspend fun syncLocalCurrentRoomId(){
+    suspend fun syncLocalRoomId(){
         currentUserData = currentUserData.copy(
             userId = localUserDataRepository.getValue(
-                key = LocalUserDataKeys.CURRENT_ROOM_ID,
+                key = LocalUserDataKeys.ROOM_ID,
                 initial = ""
             )
         )
     }
 
-    suspend fun syncLocalCurrentRoomId(newValue: String){
-        localUserDataRepository.saveValue(LocalUserDataKeys.CURRENT_ROOM_ID, newValue)
-        currentUserData = currentUserData.copy(userId = newValue)
+    suspend fun syncLocalRoomId(newValue: String){
+        localUserDataRepository.saveValue(LocalUserDataKeys.ROOM_ID, newValue)
+        currentUserData = currentUserData.copy(roomId = newValue)
     }
 }

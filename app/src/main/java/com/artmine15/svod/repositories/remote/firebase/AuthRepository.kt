@@ -1,6 +1,7 @@
 package com.artmine15.svod.repositories.remote.firebase
 
 import android.util.Log
+import com.artmine15.svod.LogTags
 import com.artmine15.svod.constants.remote.RepositoryConstants
 import com.artmine15.svod.repositories.remote.interfaces.AuthHandler
 import com.google.firebase.auth.FirebaseAuth
@@ -18,11 +19,11 @@ class AuthRepository @Inject constructor() : AuthHandler {
         db.collection(RepositoryConstants.USERS_COLLECTION)
              .add(userMap)
              .addOnSuccessListener { documentReference ->
-                 Log.d("App", "Success with id ${documentReference.id}")
+                 Log.d("Svod/Debug", "createUser()/User ${documentReference.id} created")
                  onSuccess.invoke(documentReference.id)
              }
              .addOnFailureListener { exception ->
-                 Log.d("App", "User creation failed. ${exception.toString()}")
+                 Log.d("Svod/Debug", "createUser()/User creation failed. ${exception.toString()}")
                  onFailure.invoke(exception)
              }
     }
@@ -36,10 +37,17 @@ class AuthRepository @Inject constructor() : AuthHandler {
         db.collection(RepositoryConstants.USERS_COLLECTION).document(userId)
             .get()
             .addOnSuccessListener { documentSnapshot ->
-                if(documentSnapshot != null && documentSnapshot.exists()) onSuccess.invoke()
-                else onNoUser.invoke()
+                if(documentSnapshot != null && documentSnapshot.exists()){
+                    Log.d(LogTags.debug, "isUserExists()/User $userId exists")
+                    onSuccess.invoke()
+                }
+                else{
+                    Log.d(LogTags.debug, "isUserExists()/User $userId do not exists")
+                    onNoUser.invoke()
+                }
             }
             .addOnFailureListener { exception ->
+                Log.d(LogTags.debug, "isUserExists()/${exception.toString()}")
                 onFailure(exception)
             }
     }

@@ -34,7 +34,7 @@ class HomeworkViewModel @Inject constructor(
             return
         }
 
-        val currentRoomId = viewModelScope.async { return@async localUserDataRepository.getValue(LocalUserDataKeys.CURRENT_ROOM_ID, "") }.await()
+        val currentRoomId = viewModelScope.async { return@async localUserDataRepository.getValue(LocalUserDataKeys.ROOM_ID, "") }.await()
         if(currentRoomId == ""){
             onUserNotInRoom.invoke()
             return

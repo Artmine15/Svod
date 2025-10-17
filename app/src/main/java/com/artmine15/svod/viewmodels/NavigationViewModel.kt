@@ -63,6 +63,12 @@ class NavigationViewModel @Inject constructor() : ViewModel() {
         navigateTo(startKey)
     }
 
+    fun refreshCurrentScreen(){
+        val currentScreenKey = backStack.last()
+        backStack.remove(currentScreenKey)
+        backStack.add(currentScreenKey)
+    }
+
     fun navigateBack(){
         removingJob?.cancel()
         backStack.removeLastOrNull()

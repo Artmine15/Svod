@@ -4,5 +4,5 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 
 object LocalUserDataKeys {
     val USER_ID = stringPreferencesKey("user_id")
-    val CURRENT_ROOM_ID = stringPreferencesKey("current_room_id")
+    val ROOM_ID = stringPreferencesKey("room_id")
 }

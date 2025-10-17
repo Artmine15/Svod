@@ -1,6 +1,7 @@
 package com.artmine15.svod.repositories.remote.firebase
 
 import android.util.Log
+import com.artmine15.svod.LogTags
 import com.artmine15.svod.constants.remote.RepositoryConstants
 import com.artmine15.svod.enums.Lessons
 import com.artmine15.svod.repositories.remote.interfaces.HomeworkHandler
@@ -26,11 +27,11 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
         db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId).collection(RepositoryConstants.HOMEWORKS_COLLECTION).document(date.toString())
             .set(lessonsMap)
             .addOnSuccessListener {
-                Log.d("App", "Homework initialized. Date: $date")
+                Log.d(LogTags.debug, "initializeHomework()/Homework initialized. Date: $date")
                 onSuccess.invoke()
             }
             .addOnFailureListener { exception ->
-                Log.d("App", "Homework initialization failed. ${exception.toString()}")
+                Log.d(LogTags.debug, "initializeHomework()/Homework initialization failed. ${exception.toString()}")
                 onFailure.invoke(exception)
             }
     }
@@ -72,11 +73,11 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
         homeworkDocument
             .update(lessonField.name, fieldValue)
             .addOnSuccessListener {
-                Log.d("App", "Field ${lessonField.name} has new value: $fieldValue")
+                Log.d(LogTags.debug, "updateField()/Field ${lessonField.name} has new value: $fieldValue")
                 onSuccess.invoke()
             }
             .addOnFailureListener { exception ->
-                Log.d("App", "Field ${lessonField.name} updating failed. ${exception.toString()}")
+                Log.d(LogTags.debug, "updateField()/Field ${lessonField.name} updating failed. ${exception.toString()}")
                 onFailure.invoke(exception)
             }
     }
