@@ -85,9 +85,15 @@ class RoomRepository @Inject constructor() : RoomHandler {
             .addOnSuccessListener { documentSnapshot ->
                 if (documentSnapshot != null && documentSnapshot.exists()) {
                     val userIds = documentSnapshot.get("userIds") as List<*>
-                    if (userIds.contains(userId)) onSuccess.invoke() else onNoUserInRoom.invoke()
+                    if (userIds.contains(userId)){
+                        Log.d(LogTags.debug, "isUserInRoom()/User $userId listed in room $roomId")
+                        onSuccess.invoke()
+                    }
+                    else{
+                        Log.d(LogTags.debug, "isUserInRoom()/No user $userId listed in room $roomId")
+                        onNoUserInRoom.invoke()
+                    }
 
-                    Log.d(LogTags.debug, "isUserInRoom()/User $userId listed in room $roomId")
                 }
                 else{
                     Log.d(LogTags.debug, "isUserInRoom()/No room $roomId")

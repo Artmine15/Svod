@@ -39,7 +39,8 @@ class NavigationViewModel @Inject constructor() : ViewModel() {
 
     fun replaceTo(key: NavKey, removeDelayMillis: Long){
         removingJob = viewModelScope.launch {
-            if(key == backStack.last()) return@launch
+            val keyToRemove = backStack.last()
+            if(key == keyToRemove) return@launch
 
             if(isTemporaryScreensEnabled){
                 temporaryScreensCount++
@@ -53,7 +54,10 @@ class NavigationViewModel @Inject constructor() : ViewModel() {
 
             backStack.add(key)
             delay(removeDelayMillis)
-            backStack.removeAt(backStack.size - 2)
+            for(i in backStack.size - 1 downTo 0){
+                if(backStack[i] == keyToRemove)
+                    backStack.removeAt(i)
+            }
         }
     }
 
@@ -63,10 +67,16 @@ class NavigationViewModel @Inject constructor() : ViewModel() {
         navigateTo(startKey)
     }
 
-    fun refreshCurrentScreen(){
-        val currentScreenKey = backStack.last()
-        backStack.remove(currentScreenKey)
-        backStack.add(currentScreenKey)
+    fun refreshCurrentScreen(removeDelayMillis: Long){
+        removingJob = viewModelScope.launch {
+            val currentScreenKey = backStack.last()
+            backStack.add(currentScreenKey)
+            backStack.removeAt(backStack.size - 2)
+
+            backStack.add(currentScreenKey)
+            delay(removeDelayMillis)
+            backStack.remove(currentScreenKey)
+        }
     }
 
     fun navigateBack(){

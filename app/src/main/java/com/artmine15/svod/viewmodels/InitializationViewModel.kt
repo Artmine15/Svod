@@ -8,7 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.artmine15.svod.LogTags
 import com.artmine15.svod.datastore.LocalUserDataKeys
-import com.artmine15.svod.models.CurrentUserData
+import com.artmine15.svod.model.CurrentUserData
+import com.artmine15.svod.model.CurrentUserStates
 import com.artmine15.svod.repositories.datastore.LocalUserDataRepository
 import com.artmine15.svod.repositories.remote.firebase.AuthRepository
 import com.artmine15.svod.repositories.remote.firebase.RoomRepository
@@ -25,9 +26,12 @@ class InitializationViewModel @Inject constructor(
 ) : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
 
-    var currentUserData by mutableStateOf(CurrentUserData(
+    private var currentUserData by mutableStateOf(CurrentUserData(
         userId = "",
         roomId = "",
+    ))
+
+    var currentUserStates by mutableStateOf(CurrentUserStates(
         isInitialized = false
     ))
 
@@ -40,12 +44,12 @@ class InitializationViewModel @Inject constructor(
         onSuccess: () -> Unit,
         onFailure: (exception: Exception) -> Unit
     ){
-        if(currentUserData.isInitialized) return
-
         if(auth.currentUser?.uid == "") auth.signInAnonymously()
 
         if(auth.currentUser?.uid != "") {
             viewModelScope.launch {
+                currentUserStates = currentUserStates.copy(isInitialized = false)
+
                 currentUserData = currentUserData.copy(
                     userId = localUserDataRepository.getValue(
                         LocalUserDataKeys.USER_ID,
@@ -83,14 +87,10 @@ class InitializationViewModel @Inject constructor(
                             roomRepository.isUserInRoom(
                                 roomId = currentUserData.roomId,
                                 userId = currentUserData.userId,
-                                onNoRoom = {
-                                    onNoRoom.invoke()
-                                },
-                                onNoUserInRoom = {
-                                    onNoUserInRoom.invoke()
-                                },
+                                onNoRoom = onNoRoom,
+                                onNoUserInRoom = onNoUserInRoom,
                                 onSuccess = {
-                                    currentUserData = currentUserData.copy(isInitialized = true)
+                                    currentUserStates = currentUserStates.copy(isInitialized = true)
                                     onSuccess.invoke()
                                 },
                                 onFailure = onFailure
@@ -105,33 +105,5 @@ class InitializationViewModel @Inject constructor(
             }
         }
         else if(auth.currentUser?.isAnonymous == false) onFailure.invoke(Exception("tryInitializeAuth()/No anonymous registration"))
-    }
-
-    suspend fun syncLocalUserId(){
-        currentUserData = currentUserData.copy(
-            userId = localUserDataRepository.getValue(
-                key = LocalUserDataKeys.USER_ID,
-                initial = ""
-            )
-        )
-    }
-
-    suspend fun syncLocalUserId(newValue: String){
-        localUserDataRepository.saveValue(LocalUserDataKeys.USER_ID, newValue)
-        currentUserData = currentUserData.copy(userId = newValue)
-    }
-
-    suspend fun syncLocalRoomId(){
-        currentUserData = currentUserData.copy(
-            userId = localUserDataRepository.getValue(
-                key = LocalUserDataKeys.ROOM_ID,
-                initial = ""
-            )
-        )
-    }
-
-    suspend fun syncLocalRoomId(newValue: String){
-        localUserDataRepository.saveValue(LocalUserDataKeys.ROOM_ID, newValue)
-        currentUserData = currentUserData.copy(roomId = newValue)
     }
 }

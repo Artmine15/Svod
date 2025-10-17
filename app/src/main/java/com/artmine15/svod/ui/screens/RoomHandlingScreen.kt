@@ -23,7 +23,6 @@ import kotlinx.coroutines.launch
 fun RoomHandlingScreen(){
     val navigationViewModel: NavigationViewModel = hiltViewModel()
     val roomViewModel: RoomViewModel = hiltViewModel()
-    val initializationViewModel: InitializationViewModel = hiltViewModel()
 
     val scope = rememberCoroutineScope()
 

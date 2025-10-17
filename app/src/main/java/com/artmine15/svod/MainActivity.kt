@@ -13,6 +13,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
@@ -24,6 +29,7 @@ import com.artmine15.svod.ui.screens.CurrentRoomScreen
 import com.artmine15.svod.ui.screens.RoomHandlingScreen
 import com.artmine15.svod.ui.theme.SvodTheme
 import com.artmine15.svod.viewmodels.InitializationViewModel
+import com.artmine15.svod.viewmodels.LocalUserDataViewModel
 import com.artmine15.svod.viewmodels.NavigationViewModel
 import com.artmine15.svod.viewmodels.RoomViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,10 +53,15 @@ class MainActivity : ComponentActivity() {
                     val navigationViewModel: NavigationViewModel = hiltViewModel()
                     val initializationViewModel: InitializationViewModel = hiltViewModel()
                     val roomViewModel: RoomViewModel = hiltViewModel()
+                    val localUserDataViewModel: LocalUserDataViewModel = hiltViewModel()
+                    val linkRoomIdState by remember { mutableStateOf(linkRoomId) }
 
-                    LaunchedEffect(linkRoomId) {
-                        if(linkRoomId != "")
-                            initializationViewModel.syncLocalRoomId(linkRoomId ?: "")
+                    val replacementTime: Long = 5000
+
+                    LaunchedEffect(linkRoomIdState) {
+                        if(linkRoomIdState != ""){
+                            localUserDataViewModel.saveNewRoomId(linkRoomIdState ?: "")
+                        }
                     }
                     NavDisplay(
                         modifier = Modifier.padding(innerPadding),
@@ -58,36 +69,34 @@ class MainActivity : ComponentActivity() {
                         onBack = { navigationViewModel.navigateBack() },
                         entryProvider = entryProvider{
                             entry(CurrentRoomScreenKey) {
-                                LaunchedEffect(Unit) {
+                                LaunchedEffect( Unit) {
                                     Log.d(LogTags.debug, "NavEntry/tryInitializeAuth()")
                                     initializationViewModel.tryInitializeAuth(
-                                        onNoLocalUserId = { navigationViewModel.replaceTo(AuthScreenKey, 1000) },
-                                        onNoLocalRoomId = { navigationViewModel.replaceTo(RoomHandlingScreenKey, 1000) },
-                                        onUserNotAuth = { navigationViewModel.replaceTo(AuthScreenKey, 1000) },
-                                        onNoRoom = { navigationViewModel.replaceTo(RoomHandlingScreenKey, 1000) },
+                                        onNoLocalUserId = { navigationViewModel.replaceTo(AuthScreenKey, replacementTime) },
+                                        onNoLocalRoomId = { navigationViewModel.replaceTo(RoomHandlingScreenKey, replacementTime) },
+                                        onUserNotAuth = { navigationViewModel.replaceTo(AuthScreenKey, replacementTime) },
+                                        onNoRoom = { navigationViewModel.replaceTo(RoomHandlingScreenKey, replacementTime) },
                                         onNoUserInRoom = {
-                                            if(linkRoomId == null || linkRoomId == ""){
-                                                Log.d(LogTags.debug, "onNoUserInRoom->Link/Invalid linkRoomId: $linkRoomId")
-
-                                                //navigationViewModel.replaceTo(RoomHandlingScreenKey, 1000)
+                                            if(linkRoomIdState == null || linkRoomIdState == ""){
+                                                Log.d(LogTags.debug, "onNoUserInRoom->Link/Invalid linkRoomId: $linkRoomIdState")
                                             }
                                             else{
-                                                Log.d(LogTags.debug, "onNoUserInRoom->Link/Joining in: $linkRoomId")
+                                                Log.d(LogTags.debug, "onNoUserInRoom->Link/Joining in: $linkRoomIdState")
                                                 roomViewModel.joinRoomAsUser(
-                                                    roomId = linkRoomId,
+                                                    roomId = linkRoomIdState ?: "",
                                                     onSuccess = {
-                                                        Log.d(LogTags.debug, "onNoUserInRoom->Link/Successfully join in: $linkRoomId")
-                                                        navigationViewModel.replaceTo(CurrentRoomScreenKey, 1000)
+                                                        Log.d(LogTags.debug, "onNoUserInRoom->Link/Should refresh current screen")
+                                                        recreate()
                                                     },
                                                     onFailure = {}
                                                 )
-                                                navigationViewModel.refreshCurrentScreen()
                                             }
                                         },
                                         onSuccess = {},
                                         onFailure = {}
                                     )
                                 }
+
                                 CurrentRoomScreen()
                             }
                             entry(AuthScreenKey) { AuthScreen() }
@@ -96,19 +105,26 @@ class MainActivity : ComponentActivity() {
                     )
                     Box(modifier = Modifier.padding(innerPadding)){
                         val scope = rememberCoroutineScope()
+
+                        val userIdState by localUserDataViewModel.userIdFlow.collectAsState("")
+                        val roomIdState by localUserDataViewModel.roomIdFlow.collectAsState("")
+
                         Column {
                             Text(
-                                text = "userId: ${initializationViewModel.currentUserData.userId}\nroomId: ${initializationViewModel.currentUserData.roomId}\nroomIdLink: $linkRoomId\n${navigationViewModel.backStack.size}\n${navigationViewModel.backStack.map { it }}",
+                                text = "userId: ${userIdState}\nroomId: ${roomIdState}\nroomIdLink: $linkRoomIdState\n${navigationViewModel.backStack.size}\n${navigationViewModel.backStack.map { it }}\nisInitialized: ${initializationViewModel.currentUserStates.isInitialized}",
                                 fontSize = 10.sp
                             )
                             Button(
                                 onClick = {
                                     scope.launch {
-                                        initializationViewModel.syncLocalRoomId("")
-                                        initializationViewModel.syncLocalUserId("")
+                                        localUserDataViewModel.resetUserLocalData()
                                     }
                                 }
-                            ) { }
+                            ) {
+                                Text(
+                                    text = "Clear"
+                                )
+                            }
                         }
                     }
                 }

@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.artmine15.svod.CurrentRoomScreenKey
 import com.artmine15.svod.RoomHandlingScreenKey
 import com.artmine15.svod.viewmodels.AuthViewModel
 import com.artmine15.svod.viewmodels.NavigationViewModel
@@ -57,7 +58,7 @@ fun AuthScreen(){
                 onClick = {
                     authViewModel.createNewUser(
                         name = textFieldState.text.toString(),
-                        onSuccess = { navigationViewModel.replaceTo(RoomHandlingScreenKey, 1000) },
+                        onSuccess = { navigationViewModel.replaceTo(CurrentRoomScreenKey, 1000) },
                         onFailure = { textFieldSupportTextState = "Errorrrr" }
                     )
                 }
