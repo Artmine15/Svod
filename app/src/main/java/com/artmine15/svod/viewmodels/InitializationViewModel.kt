@@ -12,17 +12,20 @@ import com.artmine15.svod.model.CurrentUserData
 import com.artmine15.svod.model.CurrentUserStates
 import com.artmine15.svod.repositories.datastore.LocalUserDataRepository
 import com.artmine15.svod.repositories.remote.firebase.AuthRepository
+import com.artmine15.svod.repositories.remote.firebase.HomeworkRepository
 import com.artmine15.svod.repositories.remote.firebase.RoomRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 
 @HiltViewModel
 class InitializationViewModel @Inject constructor(
     val localUserDataRepository: LocalUserDataRepository,
     val authRepository: AuthRepository,
     val roomRepository: RoomRepository,
+    val homeworkRepository: HomeworkRepository
 ) : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
 
@@ -58,10 +61,10 @@ class InitializationViewModel @Inject constructor(
                 )
                 if (currentUserData.userId == "") {
                     onNoLocalUserId.invoke()
-                    Log.d(LogTags.debug, "tryInitializeAuth()/UserId ${currentUserData.userId} is invalid. onNoLocalUserId.invoke(). return")
+                    Log.d(LogTags.svod, "tryInitializeAuth()/UserId ${currentUserData.userId} is invalid. onNoLocalUserId.invoke(). return")
                     return@launch
                 }
-                Log.d(LogTags.debug, "tryInitializeAuth()/Local UserId: ${currentUserData.userId}")
+                Log.d(LogTags.svod, "tryInitializeAuth()/Local UserId: ${currentUserData.userId}")
 
                 currentUserData = currentUserData.copy(
                     roomId = localUserDataRepository.getValue(
@@ -71,10 +74,10 @@ class InitializationViewModel @Inject constructor(
                 )
                 if (currentUserData.roomId == "") {
                     onNoLocalRoomId.invoke()
-                    Log.d(LogTags.debug, "tryInitializeAuth()/RoomId ${currentUserData.roomId} is invalid. onNoLocalRoomId.invoke(). return")
+                    Log.d(LogTags.svod, "tryInitializeAuth()/RoomId ${currentUserData.roomId} is invalid. onNoLocalRoomId.invoke(). return")
                     return@launch
                 }
-                Log.d(LogTags.debug, "tryInitializeAuth()/Local CurrentRoomId: ${currentUserData.roomId}")
+                Log.d(LogTags.svod, "tryInitializeAuth()/Local CurrentRoomId: ${currentUserData.roomId}")
 
                 authRepository.isUserExists(
                     userId = currentUserData.userId,
@@ -82,7 +85,7 @@ class InitializationViewModel @Inject constructor(
                         onUserNotAuth.invoke()
                     },
                     onSuccess = {
-                        Log.d(LogTags.debug, "tryInitializeAuth()/isUserExists()/onSuccess")
+                        Log.d(LogTags.svod, "tryInitializeAuth()/isUserExists()/onSuccess")
                         viewModelScope.launch {
                             roomRepository.isUserInRoom(
                                 roomId = currentUserData.roomId,
@@ -98,7 +101,7 @@ class InitializationViewModel @Inject constructor(
                         }
                     },
                     onFailure = { exception ->
-                        Log.d(LogTags.debug, exception.message.toString())
+                        Log.d(LogTags.svod, exception.message.toString())
                         onFailure.invoke(exception)
                     }
                 )

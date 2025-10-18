@@ -4,7 +4,6 @@ import android.util.Log
 import com.artmine15.svod.LogTags
 import com.artmine15.svod.constants.remote.RepositoryConstants
 import com.artmine15.svod.repositories.remote.interfaces.AuthHandler
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import jakarta.inject.Inject
 
@@ -38,16 +37,16 @@ class AuthRepository @Inject constructor() : AuthHandler {
             .get()
             .addOnSuccessListener { documentSnapshot ->
                 if(documentSnapshot != null && documentSnapshot.exists()){
-                    Log.d(LogTags.debug, "isUserExists()/User $userId exists")
+                    Log.d(LogTags.svod, "isUserExists()/User $userId exists")
                     onSuccess.invoke()
                 }
                 else{
-                    Log.d(LogTags.debug, "isUserExists()/User $userId do not exists")
+                    Log.d(LogTags.svod, "isUserExists()/User $userId do not exists")
                     onNoUser.invoke()
                 }
             }
             .addOnFailureListener { exception ->
-                Log.d(LogTags.debug, "isUserExists()/${exception.toString()}")
+                Log.d(LogTags.svod, "isUserExists()/${exception.toString()}")
                 onFailure(exception)
             }
     }

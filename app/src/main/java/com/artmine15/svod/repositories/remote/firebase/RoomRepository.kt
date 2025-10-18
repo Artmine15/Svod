@@ -24,11 +24,11 @@ class RoomRepository @Inject constructor() : RoomHandler {
 
         db.collection(RepositoryConstants.ROOMS_COLLECTION).add(usersMap)
             .addOnSuccessListener { documentReference ->
-                Log.d(LogTags.debug, "createRoomAsAdmin()/Room ${documentReference.id} created")
+                Log.d(LogTags.svod, "createRoomAsAdmin()/Room ${documentReference.id} created")
                 onSuccess.invoke(documentReference.id)
             }
             .addOnFailureListener { exception ->
-                Log.d(LogTags.debug, "createRoomAsAdmin()/Room creation failed. ${exception.toString()}")
+                Log.d(LogTags.svod, "createRoomAsAdmin()/Room creation failed. ${exception.toString()}")
                 onFailure.invoke(exception)
             }
     }
@@ -43,13 +43,13 @@ class RoomRepository @Inject constructor() : RoomHandler {
             .addOnSuccessListener { documentSnapshot ->
                 val adminUserId = documentSnapshot.get("adminUserId") as String
 
-                Log.d(LogTags.debug, "getAdminIdOfRoom()/AdminUserId of the room: $adminUserId")
+                Log.d(LogTags.svod, "getAdminIdOfRoom()/AdminUserId of the room: $adminUserId")
                 if(documentSnapshot != null && documentSnapshot.exists()){
                     onSuccess.invoke(adminUserId)
                 }
             }
             .addOnFailureListener { exception ->
-                Log.d(LogTags.debug, "getAdminIdOfRoom()/Fail to get adminUserId: ${exception.toString()}")
+                Log.d(LogTags.svod, "getAdminIdOfRoom()/Fail to get adminUserId: ${exception.toString()}")
                 onFailure(exception)
             }
     }
@@ -63,11 +63,11 @@ class RoomRepository @Inject constructor() : RoomHandler {
         db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId)
             .update("userIds", FieldValue.arrayUnion(userId))
             .addOnSuccessListener {
-                Log.d(LogTags.debug, "joinRoomAsUser()/User $userId successfully added to room $roomId")
+                Log.d(LogTags.svod, "joinRoomAsUser()/User $userId successfully added to room $roomId")
                 onSuccess.invoke()
             }
             .addOnFailureListener { exception ->
-                Log.d(LogTags.debug, "joinRoomAsUser()/Fail to add user $userId to room $roomId. ${exception.toString()}")
+                Log.d(LogTags.svod, "joinRoomAsUser()/Fail to add user $userId to room $roomId. ${exception.toString()}")
                 onFailure.invoke(exception)
             }
     }
@@ -86,22 +86,22 @@ class RoomRepository @Inject constructor() : RoomHandler {
                 if (documentSnapshot != null && documentSnapshot.exists()) {
                     val userIds = documentSnapshot.get("userIds") as List<*>
                     if (userIds.contains(userId)){
-                        Log.d(LogTags.debug, "isUserInRoom()/User $userId listed in room $roomId")
+                        Log.d(LogTags.svod, "isUserInRoom()/User $userId listed in room $roomId")
                         onSuccess.invoke()
                     }
                     else{
-                        Log.d(LogTags.debug, "isUserInRoom()/No user $userId listed in room $roomId")
+                        Log.d(LogTags.svod, "isUserInRoom()/No user $userId listed in room $roomId")
                         onNoUserInRoom.invoke()
                     }
 
                 }
                 else{
-                    Log.d(LogTags.debug, "isUserInRoom()/No room $roomId")
+                    Log.d(LogTags.svod, "isUserInRoom()/No room $roomId")
                     onNoRoom.invoke()
                 }
             }
             .addOnFailureListener { exception ->
-                Log.d(LogTags.debug, exception.toString())
+                Log.d(LogTags.svod, exception.toString())
                 onFailure.invoke(exception)
             }
     }

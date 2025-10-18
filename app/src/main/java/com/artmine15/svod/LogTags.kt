@@ -1,5 +1,5 @@
 package com.artmine15.svod
 
 object LogTags {
-    const val debug = "Svod/Debug"
+    const val svod = "Svod/App"
 }

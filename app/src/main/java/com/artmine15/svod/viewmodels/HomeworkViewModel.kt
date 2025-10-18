@@ -7,59 +7,51 @@ import com.artmine15.svod.enums.Lessons
 import com.artmine15.svod.repositories.datastore.LocalUserDataRepository
 import com.artmine15.svod.repositories.remote.firebase.HomeworkRepository
 import com.artmine15.svod.repositories.remote.firebase.RoomRepository
+import com.google.firebase.firestore.DocumentSnapshot
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 
 @HiltViewModel
 class HomeworkViewModel @Inject constructor(
     val localUserDataRepository: LocalUserDataRepository,
-    val roomRepository: RoomRepository,
     val homeworkRepository: HomeworkRepository
 ) : ViewModel() {
-    suspend fun updateHomework(
+    var documentSnapshotFlow: Flow<DocumentSnapshot?> = emptyFlow()
+
+    fun updateHomework(
         date: LocalDate,
         lesson: Lessons,
         newValue: String,
-        onUserNotAuth: () -> Unit,
-        onUserNotInRoom: () -> Unit,
-        onUserNotAdmin: () -> Unit,
         onSuccess: () -> Unit,
         onFailure: (exception: Exception) -> Unit
     ){
-        val currentUserId = viewModelScope.async { return@async localUserDataRepository.getValue(LocalUserDataKeys.USER_ID, "") }.await()
-        if(currentUserId == ""){
-            onUserNotAuth.invoke()
-            return
-        }
+        viewModelScope.launch {
+            val roomId = localUserDataRepository.getValue(LocalUserDataKeys.ROOM_ID, "")
 
-        val currentRoomId = viewModelScope.async { return@async localUserDataRepository.getValue(LocalUserDataKeys.ROOM_ID, "") }.await()
-        if(currentRoomId == ""){
-            onUserNotInRoom.invoke()
-            return
+            homeworkRepository.updateField(
+                roomId = roomId,
+                date = date,
+                lessonField = lesson,
+                fieldValue = newValue,
+                onSuccess = onSuccess,
+                onFailure = onFailure
+            )
         }
+    }
 
-        var currentAdminUserId = ""
-        roomRepository.getAdminIdOfRoom(
-            roomId = currentRoomId,
-            onSuccess = { adminUserId ->
-                currentAdminUserId = adminUserId
-            },
-            onFailure = {}
-        )
-        if(currentUserId != currentAdminUserId){
-            onUserNotAdmin.invoke()
-            return
-        }
-
-        homeworkRepository.updateField(
-            roomId = currentRoomId,
-            date = date,
-            lessonField = lesson,
-            fieldValue = newValue,
-            onSuccess = onSuccess,
-            onFailure = onFailure
+    fun updateDocumentFlow(
+        roomId: String,
+        date: LocalDate
+    ){
+        documentSnapshotFlow = homeworkRepository.getDocumentFlow(
+            roomId = roomId,
+            date = date
         )
     }
 }

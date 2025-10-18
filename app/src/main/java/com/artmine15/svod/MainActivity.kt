@@ -15,7 +15,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -70,7 +69,7 @@ class MainActivity : ComponentActivity() {
                         entryProvider = entryProvider{
                             entry(CurrentRoomScreenKey) {
                                 LaunchedEffect( Unit) {
-                                    Log.d(LogTags.debug, "NavEntry/tryInitializeAuth()")
+                                    Log.d(LogTags.svod, "NavEntry/tryInitializeAuth()")
                                     initializationViewModel.tryInitializeAuth(
                                         onNoLocalUserId = { navigationViewModel.replaceTo(AuthScreenKey, replacementTime) },
                                         onNoLocalRoomId = { navigationViewModel.replaceTo(RoomHandlingScreenKey, replacementTime) },
@@ -78,14 +77,14 @@ class MainActivity : ComponentActivity() {
                                         onNoRoom = { navigationViewModel.replaceTo(RoomHandlingScreenKey, replacementTime) },
                                         onNoUserInRoom = {
                                             if(linkRoomIdState == null || linkRoomIdState == ""){
-                                                Log.d(LogTags.debug, "onNoUserInRoom->Link/Invalid linkRoomId: $linkRoomIdState")
+                                                Log.d(LogTags.svod, "onNoUserInRoom->Link/Invalid linkRoomId: $linkRoomIdState")
                                             }
                                             else{
-                                                Log.d(LogTags.debug, "onNoUserInRoom->Link/Joining in: $linkRoomIdState")
+                                                Log.d(LogTags.svod, "onNoUserInRoom->Link/Joining in: $linkRoomIdState")
                                                 roomViewModel.joinRoomAsUser(
                                                     roomId = linkRoomIdState ?: "",
                                                     onSuccess = {
-                                                        Log.d(LogTags.debug, "onNoUserInRoom->Link/Should refresh current screen")
+                                                        Log.d(LogTags.svod, "onNoUserInRoom->Link/Should refresh current screen")
                                                         recreate()
                                                     },
                                                     onFailure = {}
@@ -112,7 +111,7 @@ class MainActivity : ComponentActivity() {
                         Column {
                             Text(
                                 text = "userId: ${userIdState}\nroomId: ${roomIdState}\nroomIdLink: $linkRoomIdState\n${navigationViewModel.backStack.size}\n${navigationViewModel.backStack.map { it }}\nisInitialized: ${initializationViewModel.currentUserStates.isInitialized}",
-                                fontSize = 10.sp
+                                fontSize = 3.sp
                             )
                             Button(
                                 onClick = {
