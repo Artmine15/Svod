@@ -1,7 +1,12 @@
 package com.artmine15.svod.viewmodels
 
+import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.artmine15.svod.LogTags
 import com.artmine15.svod.datastore.LocalUserDataKeys
 import com.artmine15.svod.enums.Lessons
 import com.artmine15.svod.repositories.datastore.LocalUserDataRepository
@@ -22,7 +27,7 @@ class HomeworkViewModel @Inject constructor(
     val localUserDataRepository: LocalUserDataRepository,
     val homeworkRepository: HomeworkRepository
 ) : ViewModel() {
-    var documentSnapshotFlow: Flow<DocumentSnapshot?> = emptyFlow()
+    val documentSnapshotFlow = homeworkRepository.homeworkDocumentSnapshotFlow
 
     fun updateHomework(
         date: LocalDate,
@@ -45,13 +50,22 @@ class HomeworkViewModel @Inject constructor(
         }
     }
 
-    fun updateDocumentFlow(
-        roomId: String,
-        date: LocalDate
+    fun tryInitializeHomework(
+        date: LocalDate,
+        onHomeworkExists: () -> Unit,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
     ){
-        documentSnapshotFlow = homeworkRepository.getDocumentFlow(
-            roomId = roomId,
-            date = date
-        )
+        viewModelScope.launch {
+            val roomId = localUserDataRepository.getValue(LocalUserDataKeys.ROOM_ID, "")
+
+            homeworkRepository.tryInitializeHomework(
+                roomId = roomId,
+                date = date,
+                onHomeworkExists = onHomeworkExists,
+                onSuccess = onSuccess,
+                onFailure = onFailure
+            )
+        }
     }
 }

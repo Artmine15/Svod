@@ -9,9 +9,16 @@ interface HomeworkHandler {
     fun tryInitializeHomework(
         roomId: String,
         date: LocalDate,
+        onHomeworkExists: () -> Unit,
         onSuccess: () -> Unit,
         onFailure: (exception: Exception) -> Unit
     )
+
+    fun updateDocumentSnapshotFlow(
+        roomId: String,
+        date: LocalDate,
+    )
+
     fun updateField(
         roomId: String,
         date: LocalDate,
@@ -20,9 +27,4 @@ interface HomeworkHandler {
         onSuccess: () -> Unit,
         onFailure: (exception: Exception) -> Unit
     )
-
-    fun getDocumentFlow(
-        roomId: String,
-        date: LocalDate,
-    ) : Flow<DocumentSnapshot?>
 }

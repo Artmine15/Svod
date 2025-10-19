@@ -1,5 +1,6 @@
 package com.artmine15.svod.ui.composables
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -19,15 +20,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.artmine15.svod.LogTags
 import com.artmine15.svod.enums.Lessons
 import com.artmine15.svod.viewmodels.HomeworkViewModel
 import com.google.firebase.firestore.DocumentSnapshot
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.compose
 import kotlinx.datetime.LocalDate
 
 val lessonsMap = mapOf(
@@ -42,10 +48,12 @@ val lessonsMap = mapOf(
 @Composable
 fun HomeworkTable(
     modifier: Modifier = Modifier,
-    date: LocalDate
+    date: LocalDate,
+    documentSnapshot: DocumentSnapshot?,
 ){
     val homeworkViewModel: HomeworkViewModel = hiltViewModel()
-    val documentSnapshot by homeworkViewModel.documentSnapshotFlow.collectAsState(null)
+
+    Log.d(LogTags.svod, "HomeworkTable composed: $documentSnapshot")
 
     Row(
         modifier = modifier
@@ -100,7 +108,7 @@ fun HomeworkTableCell(
             color = MaterialTheme.colorScheme.surfaceContainer
         )
 
-        val descriptionText = documentSnapshot?.getString(lesson.name) ?: ""
+        val descriptionText = documentSnapshot?.getString(lesson.name) ?: date.toString()
 
         if(isAdmin){
             val textFieldState = rememberTextFieldState(descriptionText)

@@ -7,9 +7,11 @@ import com.artmine15.svod.enums.Lessons
 import com.artmine15.svod.repositories.remote.interfaces.HomeworkHandler
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import jakarta.inject.Inject
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.datetime.LocalDate
@@ -23,34 +25,8 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
         }
     }
 
-    override fun tryInitializeHomework(
-        roomId: String,
-        date: LocalDate,
-        onSuccess: () -> Unit,
-        onFailure: (exception: Exception) -> Unit
-    ){
-        val homeworkDocument = db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId).collection(RepositoryConstants.HOMEWORKS_COLLECTION).document(date.toString())
-
-        homeworkDocument
-            .get()
-            .addOnSuccessListener { documentSnapshot ->
-                if(documentSnapshot == null){
-                    homeworkDocument
-                        .set(lessonsMap)
-                        .addOnSuccessListener {
-                            Log.d(LogTags.svod, "initializeHomework()/Homework initialized. Date: $date")
-                            onSuccess.invoke()
-                        }
-                        .addOnFailureListener { exception ->
-                            Log.d(LogTags.svod, "initializeHomework()/Homework initialization failed. ${exception.toString()}")
-                            onFailure.invoke(exception)
-                        }
-                }
-            }
-            .addOnFailureListener { exception ->
-                onFailure.invoke(exception)
-            }
-    }
+    val homeworkDocumentSnapshotFlow = MutableStateFlow<DocumentSnapshot?>(null)
+    var listenerRegistration: ListenerRegistration? = null
 
     override fun updateField(
         roomId: String,
@@ -90,21 +66,79 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
             }
     }
 
-     override fun getDocumentFlow(
+    override fun tryInitializeHomework(
         roomId: String,
         date: LocalDate,
-    ): Flow<DocumentSnapshot?> = callbackFlow {
-         val listenerRegistration = db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId).collection(RepositoryConstants.HOMEWORKS_COLLECTION).document(date.toString())
-             .addSnapshotListener { snapshot, error ->
-                 if(error != null){
-                     close(error)
+        onHomeworkExists: () -> Unit,
+        onSuccess: () -> Unit,
+        onFailure: (exception: Exception) -> Unit
+    ){
+        val homeworkDocument = db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId).collection(RepositoryConstants.HOMEWORKS_COLLECTION).document(date.toString())
+
+
+        homeworkDocument
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+
+                if(documentSnapshot != null && !documentSnapshot.exists()){
+                    homeworkDocument
+                        .set(lessonsMap)
+                        .addOnSuccessListener {
+                            Log.d(LogTags.svod, "initializeHomework()/Homework initialized. Date: $date")
+                            updateDocumentSnapshotFlow(
+                                roomId = roomId,
+                                date = date
+                            )
+                            onSuccess.invoke()
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.d(LogTags.svod, "initializeHomework()/Homework initialization failed. ${exception.toString()}")
+                            onFailure.invoke(exception)
+                        }
+                }
+                else{
+                    Log.d(LogTags.svod, "initializeHomework()/Homework exists and already initialized. Date: $date")
+                    updateDocumentSnapshotFlow(
+                        roomId = roomId,
+                        date = date
+                    )
+                    onHomeworkExists.invoke()
+                }
+            }
+            .addOnFailureListener { exception ->
+                onFailure.invoke(exception)
+            }
+    }
+
+     override fun updateDocumentSnapshotFlow(
+        roomId: String,
+        date: LocalDate,
+    ){
+         val document = db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId).collection(RepositoryConstants.HOMEWORKS_COLLECTION).document(date.toString())
+         listenerRegistration?.remove()
+
+         listenerRegistration = document
+             .addSnapshotListener { documentSnapshot, error ->
+                 if(error != null || documentSnapshot == null || !documentSnapshot.exists()){
                      Log.d(LogTags.svod, "getDocumentFlow()/Error: $error")
                      return@addSnapshotListener
                  }
-                 Log.d(LogTags.svod, "getDocumentFlow()/trySend ${snapshot?.id}")
-                 trySend(snapshot)
+                 homeworkDocumentSnapshotFlow.value = documentSnapshot
+                 Log.d(LogTags.svod, "getDocumentFlow()/trySend $roomId ${documentSnapshot?.id}")
+             }
+         /*
+         document
+             .get()
+             .addOnSuccessListener { documentSnapshot ->
+                 if(documentSnapshot != null && documentSnapshot.exists()){
+                     Log.d(LogTags.svod, "getDocumentFlow()/trySend ${documentSnapshot.id}")
+                     trySend(documentSnapshot)
+                 }
              }
 
-         awaitClose { listenerRegistration.remove() }
+          */
+
+
+
     }
 }

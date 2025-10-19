@@ -27,6 +27,8 @@ import com.artmine15.svod.ui.screens.AuthScreen
 import com.artmine15.svod.ui.screens.CurrentRoomScreen
 import com.artmine15.svod.ui.screens.RoomHandlingScreen
 import com.artmine15.svod.ui.theme.SvodTheme
+import com.artmine15.svod.viewmodels.DateNavigationViewModel
+import com.artmine15.svod.viewmodels.HomeworkViewModel
 import com.artmine15.svod.viewmodels.InitializationViewModel
 import com.artmine15.svod.viewmodels.LocalUserDataViewModel
 import com.artmine15.svod.viewmodels.NavigationViewModel
@@ -53,6 +55,9 @@ class MainActivity : ComponentActivity() {
                     val initializationViewModel: InitializationViewModel = hiltViewModel()
                     val roomViewModel: RoomViewModel = hiltViewModel()
                     val localUserDataViewModel: LocalUserDataViewModel = hiltViewModel()
+                    val homeworkViewModel: HomeworkViewModel = hiltViewModel()
+                    val dateNavigationViewModel: DateNavigationViewModel = hiltViewModel()
+
                     val linkRoomIdState by remember { mutableStateOf(linkRoomId) }
 
                     val replacementTime: Long = 5000
@@ -108,6 +113,7 @@ class MainActivity : ComponentActivity() {
                         val userIdState by localUserDataViewModel.userIdFlow.collectAsState("")
                         val roomIdState by localUserDataViewModel.roomIdFlow.collectAsState("")
 
+                        /*
                         Column {
                             Text(
                                 text = "userId: ${userIdState}\nroomId: ${roomIdState}\nroomIdLink: $linkRoomIdState\n${navigationViewModel.backStack.size}\n${navigationViewModel.backStack.map { it }}\nisInitialized: ${initializationViewModel.currentUserStates.isInitialized}",
@@ -125,6 +131,8 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         }
+
+                         */
                     }
                 }
             }
