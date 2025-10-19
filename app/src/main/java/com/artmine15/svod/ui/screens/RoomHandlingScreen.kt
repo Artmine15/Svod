@@ -4,13 +4,16 @@ import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.artmine15.svod.AuthScreenKey
 import com.artmine15.svod.CurrentRoomScreenKey
@@ -26,31 +29,33 @@ fun RoomHandlingScreen(){
 
     val scope = rememberCoroutineScope()
 
-    Surface(
+    Scaffold(
         modifier = Modifier
             .fillMaxSize()
-    ) {
+    ) { innerPadding ->
         Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Войдите в класс по ссылке, либо создайте свой:"
+                text = "Войдите в класс по ссылке\nили",
+                textAlign = TextAlign.Center
             )
             Button(
                 onClick = {
-                    scope.launch {
-                        roomViewModel.createRoomAsAdmin(
-                            onUserNotAuth = { navigationViewModel.navigateTo(AuthScreenKey) },
-                            onSuccess = {
-                                roomViewModel.joinRoomAsUser(
-                                    onSuccess = { navigationViewModel.replaceTo(CurrentRoomScreenKey, 1000) },
-                                    onFailure = {}
-                                )
-                            },
-                            onFailure = {  }
-                        )
-                    }
+                    roomViewModel.createRoomAsAdmin(
+                        onUserNotAuth = { navigationViewModel.navigateTo(AuthScreenKey) },
+                        onSuccess = {
+                            roomViewModel.joinRoomAsUser(
+                                onSuccess = { navigationViewModel.replaceTo(CurrentRoomScreenKey, 1000) },
+                                onFailure = {}
+                            )
+                        },
+                        onFailure = {  }
+                    )
                 }
             ) {
                 Text(

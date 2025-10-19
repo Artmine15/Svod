@@ -55,7 +55,7 @@ class NavigationViewModel @Inject constructor() : ViewModel() {
             backStack.add(key)
             delay(removeDelayMillis)
             for(i in backStack.size - 1 downTo 0){
-                if(backStack[i] == keyToRemove)
+                if(backStack[i] == keyToRemove && backStack.size > 1)
                     backStack.removeAt(i)
             }
         }

@@ -50,13 +50,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SvodTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold { innerPadding ->
                     val navigationViewModel: NavigationViewModel = hiltViewModel()
                     val initializationViewModel: InitializationViewModel = hiltViewModel()
                     val roomViewModel: RoomViewModel = hiltViewModel()
                     val localUserDataViewModel: LocalUserDataViewModel = hiltViewModel()
-                    val homeworkViewModel: HomeworkViewModel = hiltViewModel()
-                    val dateNavigationViewModel: DateNavigationViewModel = hiltViewModel()
 
                     val linkRoomIdState by remember { mutableStateOf(linkRoomId) }
 
@@ -68,7 +66,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     NavDisplay(
-                        modifier = Modifier.padding(innerPadding),
                         backStack = navigationViewModel.backStack,
                         onBack = { navigationViewModel.navigateBack() },
                         entryProvider = entryProvider{
@@ -83,6 +80,7 @@ class MainActivity : ComponentActivity() {
                                         onNoUserInRoom = {
                                             if(linkRoomIdState == null || linkRoomIdState == ""){
                                                 Log.d(LogTags.svod, "onNoUserInRoom->Link/Invalid linkRoomId: $linkRoomIdState")
+                                                navigationViewModel.replaceTo(RoomHandlingScreenKey, replacementTime)
                                             }
                                             else{
                                                 Log.d(LogTags.svod, "onNoUserInRoom->Link/Joining in: $linkRoomIdState")
@@ -107,17 +105,20 @@ class MainActivity : ComponentActivity() {
                             entry(RoomHandlingScreenKey) { RoomHandlingScreen() }
                         }
                     )
+                    Box(
+                        modifier = Modifier.padding(innerPadding)
+                    )
+                    /*
                     Box(modifier = Modifier.padding(innerPadding)){
                         val scope = rememberCoroutineScope()
 
                         val userIdState by localUserDataViewModel.userIdFlow.collectAsState("")
                         val roomIdState by localUserDataViewModel.roomIdFlow.collectAsState("")
 
-                        /*
                         Column {
                             Text(
                                 text = "userId: ${userIdState}\nroomId: ${roomIdState}\nroomIdLink: $linkRoomIdState\n${navigationViewModel.backStack.size}\n${navigationViewModel.backStack.map { it }}\nisInitialized: ${initializationViewModel.currentUserStates.isInitialized}",
-                                fontSize = 3.sp
+                                fontSize = 4.sp
                             )
                             Button(
                                 onClick = {
@@ -131,9 +132,9 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         }
-
-                         */
                     }
+
+                     */
                 }
             }
         }

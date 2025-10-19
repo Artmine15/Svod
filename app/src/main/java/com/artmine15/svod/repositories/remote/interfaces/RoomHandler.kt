@@ -7,12 +7,6 @@ interface RoomHandler {
         onFailure: (exception: Exception) -> Unit
     )
 
-    fun getAdminIdOfRoom(
-        roomId: String,
-        onSuccess: (adminUserId: String) -> Unit,
-        onFailure: (exception: Exception) -> Unit
-    )
-
     fun joinRoomAsUser(
         userId: String,
         roomId: String,
@@ -26,6 +20,19 @@ interface RoomHandler {
         onNoRoom: () -> Unit,
         onNoUserInRoom: () -> Unit,
         onSuccess: () -> Unit,
+        onFailure: (exception: Exception) -> Unit
+    )
+
+    fun getAdminIdOfRoom(
+        roomId: String,
+        onSuccess: (adminUserId: String) -> Unit,
+        onFailure: (exception: Exception) -> Unit
+    )
+
+    fun isUserAdminOfRoom(
+        userId: String,
+        roomId: String,
+        onSuccess: (isAdmin: Boolean) -> Unit,
         onFailure: (exception: Exception) -> Unit
     )
 }

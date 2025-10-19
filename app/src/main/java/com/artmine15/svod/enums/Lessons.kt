@@ -2,8 +2,18 @@ package com.artmine15.svod.enums
 
 enum class Lessons {
     RUSSIAN,
+    LITERATURE,
     ALGEBRA,
     GEOMETRY,
+    PROBABILITY_AND_STATISTICS,
     MATH,
-    ICT
+    HISTORY,
+    SOCIAL_SCIENCE,
+    CHEMISTRY,
+    BIOLOGY,
+    GEOGRAPHY,
+    ENGLISH,
+    PHYSICS,
+    ICT,
+    READING_LITERACY
 }

@@ -15,30 +15,31 @@ class RoomViewModel @Inject constructor(
     val localUserDataRepository: LocalUserDataRepository,
     val roomRepository: RoomRepository
 ) : ViewModel() {
-    suspend fun createRoomAsAdmin(
+    fun createRoomAsAdmin(
         onUserNotAuth: () -> Unit,
         onSuccess: () -> Unit,
         onFailure: (exception: Exception) -> Unit
     ){
-        val adminUserId = viewModelScope.async {
-            return@async localUserDataRepository.getValue(LocalUserDataKeys.USER_ID, "")
-        }.await()
+        viewModelScope.launch{
+            val adminUserId = viewModelScope.async {
+                return@async localUserDataRepository.getValue(LocalUserDataKeys.USER_ID, "")
+            }.await()
+            if(adminUserId == "") {
+                onUserNotAuth.invoke()
+                return@launch
+            }
 
-        if(adminUserId == "") {
-            onUserNotAuth.invoke()
-            return
+            roomRepository.createRoomAsAdmin(
+                adminUserId = adminUserId,
+                onSuccess = { roomId ->
+                    viewModelScope.launch {
+                        localUserDataRepository.saveValue(LocalUserDataKeys.ROOM_ID, roomId)
+                        onSuccess.invoke()
+                    }
+                },
+                onFailure = onFailure
+            )
         }
-
-        roomRepository.createRoomAsAdmin(
-            adminUserId = adminUserId,
-            onSuccess = { roomId ->
-                viewModelScope.launch {
-                    localUserDataRepository.saveValue(LocalUserDataKeys.ROOM_ID, roomId)
-                    onSuccess.invoke()
-                }
-            },
-            onFailure = onFailure
-        )
     }
 
     fun joinRoomAsUser(
@@ -92,6 +93,36 @@ class RoomViewModel @Inject constructor(
             localUserDataRepository.saveValue(LocalUserDataKeys.ROOM_ID, roomId)
 
             roomRepository.joinRoomAsUser(
+                userId = userId,
+                roomId = roomId,
+                onSuccess = onSuccess,
+                onFailure = onFailure
+            )
+        }
+    }
+
+    fun isUserAdminOfRoom(
+        onSuccess: (isAdmin: Boolean) -> Unit,
+        onFailure: (Exception) -> Unit
+    ){
+        viewModelScope.launch {
+            val userId = viewModelScope.async {
+                return@async localUserDataRepository.getValue(LocalUserDataKeys.USER_ID, "")
+            }.await()
+            if(userId == "") {
+                onFailure.invoke(Exception("UserId is empty"))
+                return@launch
+            }
+
+            val roomId = viewModelScope.async {
+                return@async localUserDataRepository.getValue(LocalUserDataKeys.ROOM_ID, "")
+            }.await()
+            if(roomId == "") {
+                onFailure.invoke(Exception("RoomId is empty"))
+                return@launch
+            }
+
+            roomRepository.isUserAdminOfRoom(
                 userId = userId,
                 roomId = roomId,
                 onSuccess = onSuccess,

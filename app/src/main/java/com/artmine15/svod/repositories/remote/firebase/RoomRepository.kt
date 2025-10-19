@@ -33,27 +33,6 @@ class RoomRepository @Inject constructor() : RoomHandler {
             }
     }
 
-    override fun getAdminIdOfRoom(
-        roomId: String,
-        onSuccess: (adminUserId: String) -> Unit,
-        onFailure: (exception: Exception) -> Unit,
-    ) {
-        db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId)
-            .get()
-            .addOnSuccessListener { documentSnapshot ->
-                val adminUserId = documentSnapshot.get("adminUserId") as String
-
-                Log.d(LogTags.svod, "getAdminIdOfRoom()/AdminUserId of the room: $adminUserId")
-                if(documentSnapshot != null && documentSnapshot.exists()){
-                    onSuccess.invoke(adminUserId)
-                }
-            }
-            .addOnFailureListener { exception ->
-                Log.d(LogTags.svod, "getAdminIdOfRoom()/Fail to get adminUserId: ${exception.toString()}")
-                onFailure(exception)
-            }
-    }
-
     override fun joinRoomAsUser(
         userId: String,
         roomId: String,
@@ -104,5 +83,41 @@ class RoomRepository @Inject constructor() : RoomHandler {
                 Log.d(LogTags.svod, exception.toString())
                 onFailure.invoke(exception)
             }
+    }
+
+    override fun getAdminIdOfRoom(
+        roomId: String,
+        onSuccess: (adminUserId: String) -> Unit,
+        onFailure: (exception: Exception) -> Unit,
+    ) {
+        db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                if(documentSnapshot != null && documentSnapshot.exists()){
+                    val adminUserId = documentSnapshot.get("adminUserId") as String
+                    Log.d(LogTags.svod, "getAdminIdOfRoom()/AdminUserId of the room: $adminUserId")
+
+                    onSuccess.invoke(adminUserId)
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.d(LogTags.svod, "getAdminIdOfRoom()/Fail to get adminUserId: ${exception.toString()}")
+                onFailure(exception)
+            }
+    }
+
+    override fun isUserAdminOfRoom(
+        userId: String,
+        roomId: String,
+        onSuccess: (Boolean) -> Unit,
+        onFailure: (Exception) -> Unit,
+    ) {
+        getAdminIdOfRoom(
+            roomId = roomId,
+            onSuccess = { adminUserId ->
+                onSuccess(userId == adminUserId)
+            },
+            onFailure = onFailure
+        )
     }
 }
