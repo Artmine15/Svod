@@ -32,7 +32,6 @@ fun DateNavigation(
     modifier: Modifier = Modifier,
     ){
     val dateNavigationViewModel: DateNavigationViewModel = hiltViewModel()
-    val homeworkViewModel: HomeworkViewModel = hiltViewModel()
 
     Row(
         modifier = modifier,

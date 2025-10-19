@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
 
                     val linkRoomIdState by remember { mutableStateOf(linkRoomId) }
 
-                    val replacementTime: Long = 5000
+                    val replacementTime: Long = 1000
 
                     LaunchedEffect(linkRoomIdState) {
                         if(linkRoomIdState != ""){
