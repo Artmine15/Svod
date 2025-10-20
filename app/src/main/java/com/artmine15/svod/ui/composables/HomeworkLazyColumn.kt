@@ -2,6 +2,8 @@ package com.artmine15.svod.ui.composables
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -33,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -83,7 +86,7 @@ val itemDescriptionRounding = itemRounding - itemPadding
 val itemDescriptionPadding = 8.dp
 
 @Composable
-fun HomeworkTable(
+fun HomeworkLazyColumn(
     modifier: Modifier = Modifier,
     date: LocalDate,
     isAdmin: Boolean,
@@ -96,6 +99,8 @@ fun HomeworkTable(
     Box(
         modifier = modifier
     ){
+
+
         val lessonDescriptionMap = linkedMapOf<Lessons, String>().apply {
             for (lesson in Lessons.entries){
                 val descriptionText = documentSnapshot?.getString(lesson.name) ?: ""
@@ -109,16 +114,18 @@ fun HomeworkTable(
             }
         }
 
-        val visibleStates = remember { mutableStateListOf<Boolean>().apply { repeat(lessonDescriptionMap.size) { add(false) } } }
-
-        LaunchedEffect(Unit) {
-            lessonDescriptionMap.entries.indices.forEach { i ->
-                delay(i * 5L)
-                visibleStates[i] = true
-            }
-        }
-
         if(lessonDescriptionMap.isNotEmpty()){
+            val visibleStates = remember { mutableStateListOf<Boolean>().apply { repeat(lessonDescriptionMap.size) { add(false) } } }
+
+            LaunchedEffect(Unit) {
+                lessonDescriptionMap.entries.indices.forEach { i ->
+                    delay(i * 5L)
+                    if (i < visibleStates.size) {
+                        visibleStates[i] = true
+                    }
+                }
+            }
+
             LazyColumn(
                 modifier = Modifier.clip(RoundedCornerShape(listContainerRounding)),
                 verticalArrangement = Arrangement.spacedBy(listContainerPadding / 2),
@@ -127,7 +134,19 @@ fun HomeworkTable(
                 itemsIndexed(lessonDescriptionMap.toList(), key = { _, lesson -> lesson.first.name }){ index, lesson ->
                     AnimatedVisibility(
                         visible = visibleStates[index],
-                        enter = fadeIn(tween(500)) + slideInVertically() + scaleIn()
+                        enter = fadeIn(
+                            tween(500)
+                        ) + slideInVertically(
+                            spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessMediumLow
+                            )
+                        ) + scaleIn(
+                            spring(
+                                dampingRatio = Spring.DampingRatioNoBouncy,
+                                stiffness = Spring.StiffnessMediumLow
+                            )
+                        )
                     ) {
                         HomeworkItem(
                             lesson = lesson.first,

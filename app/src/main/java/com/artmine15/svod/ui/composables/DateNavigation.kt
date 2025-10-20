@@ -2,7 +2,10 @@ package com.artmine15.svod.ui.composables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -11,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.artmine15.svod.R
 import com.artmine15.svod.viewmodels.DateNavigationViewModel
@@ -33,10 +37,9 @@ fun DateNavigation(
     ){
     val dateNavigationViewModel: DateNavigationViewModel = hiltViewModel()
 
-    Row(
+    HorizontalFloatingToolbar(
         modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        expanded = true,
     ) {
         IconButton(
             onClick = {
@@ -48,10 +51,13 @@ fun DateNavigation(
                 contentDescription = "Previous date"
             )
         }
+
         Text(
+            modifier = Modifier.width(148.dp),
             text = "${dateNavigationViewModel.currentDate}\n${russianDayOfWeek.getValue(dateNavigationViewModel.currentDate.dayOfWeek.name)}",
             textAlign = TextAlign.Center
         )
+
         IconButton(
             onClick = {
                 dateNavigationViewModel.switchToNextDay()

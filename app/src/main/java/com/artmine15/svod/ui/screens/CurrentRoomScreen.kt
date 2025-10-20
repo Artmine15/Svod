@@ -2,11 +2,14 @@ package com.artmine15.svod.ui.screens
 
 import android.content.Intent
 import android.util.Log
+import android.widget.Space
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
@@ -14,9 +17,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -44,7 +49,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.artmine15.svod.LogTags
 import com.artmine15.svod.R
 import com.artmine15.svod.ui.composables.DateNavigation
-import com.artmine15.svod.ui.composables.HomeworkTable
+import com.artmine15.svod.ui.composables.HomeworkLazyColumn
 import com.artmine15.svod.ui.composables.listContainerRounding
 import com.artmine15.svod.viewmodels.DateNavigationViewModel
 import com.artmine15.svod.viewmodels.HomeworkViewModel
@@ -115,8 +120,7 @@ fun CurrentRoomScreen(){
         AnimatedContent(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(4.dp),
+                .padding(innerPadding),
             targetState = initializationViewModel.currentUserStates.isInitialized,
             contentAlignment = Alignment.TopCenter
         ) { it ->
@@ -124,13 +128,15 @@ fun CurrentRoomScreen(){
                 val documentSnapshot by homeworkViewModel.documentSnapshotFlow.collectAsState()
 
                 Column(
+                    modifier = Modifier
+                        .padding(8.dp),
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    DateNavigation(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
+                    DateNavigation()
+
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
                     )
 
                     LaunchedEffect(dateNavigationViewModel.currentDate) {
@@ -152,7 +158,7 @@ fun CurrentRoomScreen(){
                         },
                         onFailure = {}
                     )
-                    Box(
+                    Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(
@@ -162,12 +168,12 @@ fun CurrentRoomScreen(){
                     ){
                         AnimatedContent(
                             targetState = isVisible,
-                            transitionSpec = { (fadeIn(tween(1000)))
+                            transitionSpec = { (fadeIn())
                                 .togetherWith(fadeOut(tween(10))) }
                         ) { state ->
                             if(state){
                                 Log.d(LogTags.svod, "${documentSnapshot?.id.toString()} == ${dateNavigationViewModel.currentDate}")
-                                HomeworkTable(
+                                HomeworkLazyColumn(
                                     date = dateNavigationViewModel.currentDate,
                                     isAdmin = isAdmin,
                                     documentSnapshot = documentSnapshot

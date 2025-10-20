@@ -59,52 +59,57 @@ class InitializationViewModel @Inject constructor(
                         ""
                     )
                 )
-                if (currentUserData.userId == "") {
+
+                if (currentUserData.userId != "") {
+                    Log.d(LogTags.svod, "tryInitializeAuth()/Local UserId: ${currentUserData.userId}")
+
+                    currentUserData = currentUserData.copy(
+                        roomId = localUserDataRepository.getValue(
+                            LocalUserDataKeys.ROOM_ID,
+                            ""
+                        )
+                    )
+                    if (currentUserData.roomId != "") {
+                        Log.d(LogTags.svod, "tryInitializeAuth()/Local CurrentRoomId: ${currentUserData.roomId}")
+
+                        authRepository.isUserExists(
+                            userId = currentUserData.userId,
+                            onNoUser = {
+                                onUserNotAuth.invoke()
+                            },
+                            onSuccess = {
+                                Log.d(LogTags.svod, "tryInitializeAuth()/isUserExists()/onSuccess")
+                                viewModelScope.launch {
+                                    roomRepository.isUserInRoom(
+                                        roomId = currentUserData.roomId,
+                                        userId = currentUserData.userId,
+                                        onNoRoom = onNoRoom,
+                                        onNoUserInRoom = onNoUserInRoom,
+                                        onSuccess = {
+                                            currentUserStates = currentUserStates.copy(isInitialized = true)
+                                            onSuccess.invoke()
+                                        },
+                                        onFailure = onFailure
+                                    )
+                                }
+                            },
+                            onFailure = { exception ->
+                                Log.d(LogTags.svod, exception.message.toString())
+                                onFailure.invoke(exception)
+                            }
+                        )
+                    }
+                    else{
+                        onNoLocalRoomId.invoke()
+                        Log.d(LogTags.svod, "tryInitializeAuth()/RoomId ${currentUserData.roomId} is invalid. onNoLocalRoomId.invoke(). return")
+                        return@launch
+                    }
+                }
+                else{
                     onNoLocalUserId.invoke()
                     Log.d(LogTags.svod, "tryInitializeAuth()/UserId ${currentUserData.userId} is invalid. onNoLocalUserId.invoke(). return")
                     return@launch
                 }
-                Log.d(LogTags.svod, "tryInitializeAuth()/Local UserId: ${currentUserData.userId}")
-
-                currentUserData = currentUserData.copy(
-                    roomId = localUserDataRepository.getValue(
-                        LocalUserDataKeys.ROOM_ID,
-                        ""
-                    )
-                )
-                if (currentUserData.roomId == "") {
-                    onNoLocalRoomId.invoke()
-                    Log.d(LogTags.svod, "tryInitializeAuth()/RoomId ${currentUserData.roomId} is invalid. onNoLocalRoomId.invoke(). return")
-                    return@launch
-                }
-                Log.d(LogTags.svod, "tryInitializeAuth()/Local CurrentRoomId: ${currentUserData.roomId}")
-
-                authRepository.isUserExists(
-                    userId = currentUserData.userId,
-                    onNoUser = {
-                        onUserNotAuth.invoke()
-                    },
-                    onSuccess = {
-                        Log.d(LogTags.svod, "tryInitializeAuth()/isUserExists()/onSuccess")
-                        viewModelScope.launch {
-                            roomRepository.isUserInRoom(
-                                roomId = currentUserData.roomId,
-                                userId = currentUserData.userId,
-                                onNoRoom = onNoRoom,
-                                onNoUserInRoom = onNoUserInRoom,
-                                onSuccess = {
-                                    currentUserStates = currentUserStates.copy(isInitialized = true)
-                                    onSuccess.invoke()
-                                },
-                                onFailure = onFailure
-                            )
-                        }
-                    },
-                    onFailure = { exception ->
-                        Log.d(LogTags.svod, exception.message.toString())
-                        onFailure.invoke(exception)
-                    }
-                )
             }
         }
         else if(auth.currentUser?.isAnonymous == false) onFailure.invoke(Exception("tryInitializeAuth()/No anonymous registration"))
