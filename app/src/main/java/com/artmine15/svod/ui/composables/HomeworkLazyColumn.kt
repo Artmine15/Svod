@@ -2,25 +2,24 @@ package com.artmine15.svod.ui.composables
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -31,7 +30,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,7 +44,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.artmine15.svod.LogTags
@@ -51,6 +51,7 @@ import com.artmine15.svod.R
 import com.artmine15.svod.enums.Lessons
 import com.artmine15.svod.viewmodels.HomeworkViewModel
 import com.google.firebase.firestore.DocumentSnapshot
+import kotlinx.coroutines.delay
 import kotlinx.datetime.LocalDate
 
 val lessonLabelsMap = mapOf(
@@ -74,19 +75,18 @@ val lessonLabelsMap = mapOf(
 
 val noLessonsEmojiSet = setOf("🤗", "🗿", "😋", "💅", "🫡", "😌", "😇", "🥰", "🤩")
 
-val tableRounding = 28.dp
-val tablePadding = 12.dp
-val rowRounding = tableRounding - tablePadding
-val rowPadding = 8.dp
-val rowDescriptionRounding = rowRounding - rowPadding
-val rowDescriptionPadding = 8.dp
+val listContainerRounding = 28.dp
+val listContainerPadding = 12.dp
+val itemRounding = listContainerRounding - listContainerPadding
+val itemPadding = 8.dp
+val itemDescriptionRounding = itemRounding - itemPadding
+val itemDescriptionPadding = 8.dp
 
 @Composable
 fun HomeworkTable(
     modifier: Modifier = Modifier,
     date: LocalDate,
     isAdmin: Boolean,
-    rowLessonLabelWidth: Dp = 135.dp,
     documentSnapshot: DocumentSnapshot?,
 ){
     val homeworkViewModel: HomeworkViewModel = hiltViewModel()
@@ -95,12 +95,6 @@ fun HomeworkTable(
 
     Box(
         modifier = modifier
-            .fillMaxWidth()
-            .border(
-                width = 4.dp,
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                shape = RoundedCornerShape(tableRounding)
-            )
     ){
         val lessonDescriptionMap = linkedMapOf<Lessons, String>().apply {
             for (lesson in Lessons.entries){
@@ -114,27 +108,44 @@ fun HomeworkTable(
                 }
             }
         }
+
+        val visibleStates = remember { mutableStateListOf<Boolean>().apply { repeat(lessonDescriptionMap.size) { add(false) } } }
+
+        LaunchedEffect(Unit) {
+            lessonDescriptionMap.entries.indices.forEach { i ->
+                delay(i * 5L)
+                visibleStates[i] = true
+            }
+        }
+
         if(lessonDescriptionMap.isNotEmpty()){
             LazyColumn(
-                modifier = Modifier.clip(RoundedCornerShape(tableRounding)),
-                verticalArrangement = Arrangement.spacedBy(tablePadding / 2),
-                contentPadding = PaddingValues(tablePadding)
+                modifier = Modifier.clip(RoundedCornerShape(listContainerRounding)),
+                verticalArrangement = Arrangement.spacedBy(listContainerPadding / 2),
+                contentPadding = PaddingValues(listContainerPadding)
             ) {
-                items(lessonDescriptionMap.toList(), key = { it.first.name }){  lesson ->
-                    HomeworkTableRow(
-                        lesson = lesson.first,
-                        date = date,
-                        isAdmin = isAdmin,
-                        homeworkViewModel = homeworkViewModel,
-                        lessonDescription = lesson.second
-                    )
+                itemsIndexed(lessonDescriptionMap.toList(), key = { _, lesson -> lesson.first.name }){ index, lesson ->
+                    AnimatedVisibility(
+                        visible = visibleStates[index],
+                        enter = fadeIn(tween(500)) + slideInVertically() + scaleIn()
+                    ) {
+                        HomeworkItem(
+                            lesson = lesson.first,
+                            date = date,
+                            isAdmin = isAdmin,
+                            homeworkViewModel = homeworkViewModel,
+                            lessonDescription = lesson.second
+                        )
+                    }
                 }
             }
         }
         else{
             Text(
-                modifier = Modifier.padding(tablePadding).align(Alignment.Center),
-                text = "Уроков нет${noLessonsEmojiSet.random()}"
+                modifier = Modifier
+                    .padding(listContainerPadding)
+                    .align(Alignment.Center),
+                text = "Домашнего задания нет${noLessonsEmojiSet.random()}"
             )
         }
     }
@@ -142,7 +153,7 @@ fun HomeworkTable(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun HomeworkTableRow(
+fun HomeworkItem(
     modifier: Modifier = Modifier,
     lesson: Lessons,
     date: LocalDate,
@@ -155,9 +166,9 @@ fun HomeworkTableRow(
             .fillMaxWidth()
             .background(
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                shape = RoundedCornerShape(rowRounding)
+                shape = RoundedCornerShape(itemRounding)
             )
-            .padding(rowPadding),
+            .padding(itemPadding),
         verticalArrangement = Arrangement.Center
     ) {
         Text(
@@ -218,7 +229,7 @@ fun HomeworkTableRow(
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Next
                 ),
-                shape = RoundedCornerShape(rowDescriptionRounding),
+                shape = RoundedCornerShape(itemDescriptionRounding),
                 textStyle = MaterialTheme.typography.bodySmall
             )
         }
@@ -228,9 +239,9 @@ fun HomeworkTableRow(
                     .fillMaxSize()
                     .background(
                         color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        shape = RoundedCornerShape(rowDescriptionRounding)
+                        shape = RoundedCornerShape(itemDescriptionRounding)
                     )
-                    .padding(rowDescriptionPadding),
+                    .padding(itemDescriptionPadding),
                 text = descriptionText,
                 style = MaterialTheme.typography.bodySmall
             )

@@ -48,7 +48,6 @@ fun AuthScreen(){
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
-
     ) { innerPadding ->
         Column(
             modifier = Modifier

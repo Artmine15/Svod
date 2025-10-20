@@ -10,11 +10,14 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -42,6 +45,7 @@ import com.artmine15.svod.LogTags
 import com.artmine15.svod.R
 import com.artmine15.svod.ui.composables.DateNavigation
 import com.artmine15.svod.ui.composables.HomeworkTable
+import com.artmine15.svod.ui.composables.listContainerRounding
 import com.artmine15.svod.viewmodels.DateNavigationViewModel
 import com.artmine15.svod.viewmodels.HomeworkViewModel
 import com.artmine15.svod.viewmodels.InitializationViewModel
@@ -109,7 +113,10 @@ fun CurrentRoomScreen(){
         }
     ) { innerPadding ->
         AnimatedContent(
-            modifier = Modifier.padding(innerPadding).padding(4.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(4.dp),
             targetState = initializationViewModel.currentUserStates.isInitialized,
             contentAlignment = Alignment.TopCenter
         ) { it ->
@@ -145,28 +152,36 @@ fun CurrentRoomScreen(){
                         },
                         onFailure = {}
                     )
-                    AnimatedContent(
-                        targetState = isVisible,
-                        transitionSpec = { (fadeIn(animationSpec = tween(220, delayMillis = 90)) + slideInVertically())
-                            .togetherWith(fadeOut(animationSpec = tween(90))) }
-                    ) { state ->
-                        if(state){
-                            Log.d(LogTags.svod, "${documentSnapshot?.id.toString()} == ${dateNavigationViewModel.currentDate}")
-                            HomeworkTable(
-                                modifier = Modifier.padding(4.dp),
-                                date = dateNavigationViewModel.currentDate,
-                                isAdmin = isAdmin,
-                                documentSnapshot = documentSnapshot
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceContainerLowest,
+                                shape = RoundedCornerShape(listContainerRounding)
                             )
-                        }
-                        else{
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                LoadingIndicator(modifier = Modifier)
+                    ){
+                        AnimatedContent(
+                            targetState = isVisible,
+                            transitionSpec = { (fadeIn(tween(1000)))
+                                .togetherWith(fadeOut(tween(10))) }
+                        ) { state ->
+                            if(state){
+                                Log.d(LogTags.svod, "${documentSnapshot?.id.toString()} == ${dateNavigationViewModel.currentDate}")
+                                HomeworkTable(
+                                    date = dateNavigationViewModel.currentDate,
+                                    isAdmin = isAdmin,
+                                    documentSnapshot = documentSnapshot
+                                )
+                            }
+                            else{
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize(),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    LoadingIndicator(modifier = Modifier)
+                                }
                             }
                         }
                     }
