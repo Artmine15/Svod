@@ -99,8 +99,6 @@ fun HomeworkLazyColumn(
     Box(
         modifier = modifier
     ){
-
-
         val lessonDescriptionMap = linkedMapOf<Lessons, String>().apply {
             for (lesson in Lessons.entries){
                 val descriptionText = documentSnapshot?.getString(lesson.name) ?: ""
@@ -160,12 +158,16 @@ fun HomeworkLazyColumn(
             }
         }
         else{
-            Text(
-                modifier = Modifier
-                    .padding(listContainerPadding)
-                    .align(Alignment.Center),
-                text = "Домашнего задания нет${noLessonsEmojiSet.random()}"
-            )
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.TopCenter
+            ){
+                Text(
+                    modifier = Modifier
+                        .padding(listContainerPadding),
+                    text = "Домашнего задания нет${noLessonsEmojiSet.random()}"
+                )
+            }
         }
     }
 }
