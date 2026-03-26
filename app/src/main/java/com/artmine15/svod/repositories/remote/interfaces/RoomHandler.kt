@@ -14,6 +14,13 @@ interface RoomHandler {
         onFailure: (exception: Exception) -> Unit
     )
 
+    fun leaveRoomAsUser(
+        userId: String,
+        roomId: String,
+        onSuccess: () -> Unit,
+        onFailure: (exception: Exception) -> Unit
+    )
+
     suspend fun isUserInRoom(
         userId: String,
         roomId: String,

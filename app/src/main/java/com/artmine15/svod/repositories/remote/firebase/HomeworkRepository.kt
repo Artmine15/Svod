@@ -75,11 +75,9 @@ class HomeworkRepository @Inject constructor() : HomeworkHandler {
     ){
         val homeworkDocument = db.collection(RepositoryConstants.ROOMS_COLLECTION).document(roomId).collection(RepositoryConstants.HOMEWORKS_COLLECTION).document(date.toString())
 
-
         homeworkDocument
             .get()
             .addOnSuccessListener { documentSnapshot ->
-
                 if(documentSnapshot != null && !documentSnapshot.exists()){
                     homeworkDocument
                         .set(lessonsMap)
